@@ -1,0 +1,22 @@
+{
+	"requestID": "ffe5eda6-ec0d-4adf-bb8a-a54be346c865",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "java.lang.IllegalStateException: Trying to write to a deleted file."	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "156.661436322s",
+		"executionTime": "156.428037611s",
+		"compileTime": "2.21169453s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

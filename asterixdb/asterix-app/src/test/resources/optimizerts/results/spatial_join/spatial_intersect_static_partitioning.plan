@@ -1,0 +1,29 @@
+-- DISTRIBUTE_RESULT  |UNPARTITIONED|
+  -- ONE_TO_ONE_EXCHANGE  |UNPARTITIONED|
+    -- ASSIGN  |UNPARTITIONED|
+      -- AGGREGATE  |UNPARTITIONED|
+        -- RANDOM_MERGE_EXCHANGE  |PARTITIONED|
+          -- AGGREGATE  |PARTITIONED|
+            -- STREAM_SELECT  |PARTITIONED|
+              -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                -- SPATIAL_JOIN [$$56, $$52] [$$57, $$53]  |PARTITIONED|
+                  -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                    -- STABLE_SORT [$$56(ASC), $$52(ASC)]  |PARTITIONED|
+                      -- HASH_PARTITION_EXCHANGE [$$56]  |PARTITIONED|
+                        -- UNNEST  |PARTITIONED|
+                          -- ASSIGN  |PARTITIONED|
+                            -- STREAM_PROJECT  |PARTITIONED|
+                              -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                                -- DATASOURCE_SCAN (test.ParkSet)  |PARTITIONED|
+                                  -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                                    -- EMPTY_TUPLE_SOURCE  |PARTITIONED|
+                  -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                    -- STABLE_SORT [$$57(ASC), $$53(ASC)]  |PARTITIONED|
+                      -- HASH_PARTITION_EXCHANGE [$$57]  |PARTITIONED|
+                        -- UNNEST  |PARTITIONED|
+                          -- ASSIGN  |PARTITIONED|
+                            -- STREAM_PROJECT  |PARTITIONED|
+                              -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                                -- DATASOURCE_SCAN (test.LakeSet)  |PARTITIONED|
+                                  -- ONE_TO_ONE_EXCHANGE  |PARTITIONED|
+                                    -- EMPTY_TUPLE_SOURCE  |PARTITIONED|

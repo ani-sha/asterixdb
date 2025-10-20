@@ -1,0 +1,22 @@
+{
+	"requestID": "f1732a71-071c-445f-b4ca-e4396dc0fc9d",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "ASX0041: Request f1732a71-071c-445f-b4ca-e4396dc0fc9d has been cancelled"	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "220.49834645s",
+		"executionTime": "220.342430752s",
+		"compileTime": "2.60069046s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

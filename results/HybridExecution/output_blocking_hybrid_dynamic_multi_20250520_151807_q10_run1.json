@@ -1,0 +1,631 @@
+{
+	"requestID": "ab200baf-8a1e-4d66-ab33-41cb5e336b87"	"signature": {
+		"*": "*"
+	},
+	"results": [  ]
+	,
+	"plans":{"optimizedLogicalPlan": {
+   "operator" : "distribute-result",
+   "expressions" : [ "$$166" ],
+   "operatorId" : "1.1",
+   "runtime-id" : "ODID:7",
+   "physical-operator" : "DISTRIBUTE_RESULT",
+   "execution-mode" : "PARTITIONED",
+   "optimizer-estimates" : {
+      "cardinality" : 0.0,
+      "op-cost" : 0.0,
+      "total-cost" : 0.0
+   },
+   "inputs" : [ {
+      "operator" : "exchange",
+      "operatorId" : "1.2",
+      "runtime-id" : "CDID:15",
+      "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+      "execution-mode" : "PARTITIONED",
+      "optimizer-estimates" : {
+         "cardinality" : 0.0,
+         "op-cost" : 0.0,
+         "total-cost" : 0.0
+      },
+      "inputs" : [ {
+         "operator" : "project",
+         "variables" : [ "$$166" ],
+         "operatorId" : "1.3",
+         "runtime-id" : "ODID:14.2",
+         "physical-operator" : "STREAM_PROJECT",
+         "execution-mode" : "PARTITIONED",
+         "optimizer-estimates" : {
+            "cardinality" : 0.0,
+            "op-cost" : 0.0,
+            "total-cost" : 0.0
+         },
+         "inputs" : [ {
+            "operator" : "assign",
+            "variables" : [ "$$166" ],
+            "expressions" : [ "to-object-var-str({\"c_custkey\": $$c_custkey, \"c_name\": $$c_name, \"revenue\": $$183, \"c_acctbal\": $$c_acctbal, \"c_address\": $$c_address, \"c_phone\": $$c_phone, \"c_comment\": $$c_comment})" ],
+            "operatorId" : "1.4",
+            "runtime-id" : "ODID:14.1",
+            "physical-operator" : "ASSIGN",
+            "execution-mode" : "PARTITIONED",
+            "optimizer-estimates" : {
+               "cardinality" : 0.0,
+               "op-cost" : 0.0,
+               "total-cost" : 0.0
+            },
+            "inputs" : [ {
+               "operator" : "select",
+               "condition" : "gt($$c_custkey, 10000)",
+               "operatorId" : "1.5",
+               "runtime-id" : "ODID:14.0",
+               "physical-operator" : "STREAM_SELECT",
+               "execution-mode" : "PARTITIONED",
+               "optimizer-estimates" : {
+                  "cardinality" : 0.0,
+                  "op-cost" : 0.0,
+                  "total-cost" : 0.0
+               },
+               "inputs" : [ {
+                  "operator" : "exchange",
+                  "operatorId" : "1.6",
+                  "runtime-id" : "CDID:14",
+                  "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                  "execution-mode" : "PARTITIONED",
+                  "optimizer-estimates" : {
+                     "cardinality" : 0.0,
+                     "op-cost" : 0.0,
+                     "total-cost" : 0.0
+                  },
+                  "inputs" : [ {
+                     "operator" : "group-by",
+                     "group-by-list" : [ {
+                        "variable" : "$$c_custkey",
+                        "expression" : "$$189"
+                     }, {
+                        "variable" : "$$c_name",
+                        "expression" : "$$190"
+                     }, {
+                        "variable" : "$$c_acctbal",
+                        "expression" : "$$191"
+                     }, {
+                        "variable" : "$$c_address",
+                        "expression" : "$$192"
+                     }, {
+                        "variable" : "$$c_phone",
+                        "expression" : "$$193"
+                     }, {
+                        "variable" : "$$c_comment",
+                        "expression" : "$$194"
+                     } ],
+                     "subplan" : [ {
+                        "operator" : "aggregate",
+                        "variables" : [ "$$183" ],
+                        "expressions" : [ "agg-global-sql-sum($$188)" ],
+                        "operatorId" : "1.6.1",
+                        "physical-operator" : "AGGREGATE",
+                        "execution-mode" : "LOCAL",
+                        "inputs" : [ {
+                           "operator" : "nested-tuple-source",
+                           "operatorId" : "1.6.2",
+                           "physical-operator" : "NESTED_TUPLE_SOURCE",
+                           "execution-mode" : "LOCAL"
+                        } ]
+                     } ],
+                     "operatorId" : "1.7",
+                     "runtime-id" : "ODID:6",
+                     "physical-operator" : "SORT_GROUP_BY[$$189, $$190, $$191, $$192, $$193, $$194]",
+                     "execution-mode" : "PARTITIONED",
+                     "optimizer-estimates" : {
+                        "cardinality" : 0.0,
+                        "op-cost" : 0.0,
+                        "total-cost" : 0.0
+                     },
+                     "inputs" : [ {
+                        "operator" : "exchange",
+                        "operatorId" : "1.8",
+                        "runtime-id" : "CDID:13",
+                        "physical-operator" : "HASH_PARTITION_EXCHANGE [$$189, $$190, $$191, $$192, $$193, $$194]",
+                        "execution-mode" : "PARTITIONED",
+                        "optimizer-estimates" : {
+                           "cardinality" : 0.0,
+                           "op-cost" : 0.0,
+                           "total-cost" : 0.0
+                        },
+                        "inputs" : [ {
+                           "operator" : "group-by",
+                           "group-by-list" : [ {
+                              "variable" : "$$189",
+                              "expression" : "$$175"
+                           }, {
+                              "variable" : "$$190",
+                              "expression" : "$$168"
+                           }, {
+                              "variable" : "$$191",
+                              "expression" : "$$169"
+                           }, {
+                              "variable" : "$$192",
+                              "expression" : "$$170"
+                           }, {
+                              "variable" : "$$193",
+                              "expression" : "$$171"
+                           }, {
+                              "variable" : "$$194",
+                              "expression" : "$$172"
+                           } ],
+                           "subplan" : [ {
+                              "operator" : "aggregate",
+                              "variables" : [ "$$188" ],
+                              "expressions" : [ "agg-local-sql-sum(numeric-multiply($$185, numeric-subtract(1, $$186)))" ],
+                              "operatorId" : "1.8.1",
+                              "physical-operator" : "AGGREGATE",
+                              "execution-mode" : "LOCAL",
+                              "inputs" : [ {
+                                 "operator" : "nested-tuple-source",
+                                 "operatorId" : "1.8.2",
+                                 "physical-operator" : "NESTED_TUPLE_SOURCE",
+                                 "execution-mode" : "LOCAL"
+                              } ]
+                           } ],
+                           "operatorId" : "1.9",
+                           "runtime-id" : "ODID:5",
+                           "physical-operator" : "SORT_GROUP_BY[$$175, $$168, $$169, $$170, $$171, $$172]",
+                           "execution-mode" : "PARTITIONED",
+                           "optimizer-estimates" : {
+                              "cardinality" : 0.0,
+                              "op-cost" : 0.0,
+                              "total-cost" : 0.0
+                           },
+                           "inputs" : [ {
+                              "operator" : "exchange",
+                              "operatorId" : "1.10",
+                              "runtime-id" : "CDID:12",
+                              "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                              "execution-mode" : "PARTITIONED",
+                              "optimizer-estimates" : {
+                                 "cardinality" : 0.0,
+                                 "op-cost" : 0.0,
+                                 "total-cost" : 0.0
+                              },
+                              "inputs" : [ {
+                                 "operator" : "project",
+                                 "variables" : [ "$$185", "$$186", "$$175", "$$168", "$$169", "$$170", "$$171", "$$172" ],
+                                 "operatorId" : "1.11",
+                                 "runtime-id" : "ODID:9.0",
+                                 "physical-operator" : "STREAM_PROJECT",
+                                 "execution-mode" : "PARTITIONED",
+                                 "optimizer-estimates" : {
+                                    "cardinality" : 0.0,
+                                    "op-cost" : 0.0,
+                                    "total-cost" : 0.0
+                                 },
+                                 "inputs" : [ {
+                                    "operator" : "exchange",
+                                    "operatorId" : "1.12",
+                                    "runtime-id" : "CDID:11",
+                                    "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                    "execution-mode" : "PARTITIONED",
+                                    "optimizer-estimates" : {
+                                       "cardinality" : 0.0,
+                                       "op-cost" : 0.0,
+                                       "total-cost" : 0.0
+                                    },
+                                    "inputs" : [ {
+                                       "operator" : "join",
+                                       "condition" : "eq($$177, $$176)",
+                                       "build-side" : 0,
+                                       "operatorId" : "1.13",
+                                       "runtime-id" : "ODID:4",
+                                       "physical-operator" : "HYBRID_HASH_JOIN [$$176][$$177]",
+                                       "execution-mode" : "PARTITIONED",
+                                       "optimizer-estimates" : {
+                                          "cardinality" : 0.0,
+                                          "op-cost" : 0.0,
+                                          "total-cost" : 0.0
+                                       },
+                                       "inputs" : [ {
+                                          "operator" : "exchange",
+                                          "operatorId" : "1.14",
+                                          "runtime-id" : "CDID:10",
+                                          "physical-operator" : "HASH_PARTITION_EXCHANGE [$$177]",
+                                          "execution-mode" : "PARTITIONED",
+                                          "optimizer-estimates" : {
+                                             "cardinality" : 0.0,
+                                             "op-cost" : 0.0,
+                                             "total-cost" : 0.0
+                                          },
+                                          "inputs" : [ {
+                                             "operator" : "project",
+                                             "variables" : [ "$$185", "$$186", "$$177" ],
+                                             "operatorId" : "1.15",
+                                             "runtime-id" : "ODID:8.3",
+                                             "physical-operator" : "STREAM_PROJECT",
+                                             "execution-mode" : "PARTITIONED",
+                                             "optimizer-estimates" : {
+                                                "cardinality" : 0.0,
+                                                "op-cost" : 0.0,
+                                                "total-cost" : 0.0
+                                             },
+                                             "inputs" : [ {
+                                                "operator" : "select",
+                                                "condition" : "eq($$l.getField(8), \"R\")",
+                                                "operatorId" : "1.16",
+                                                "runtime-id" : "ODID:8.2",
+                                                "physical-operator" : "STREAM_SELECT",
+                                                "execution-mode" : "PARTITIONED",
+                                                "optimizer-estimates" : {
+                                                   "cardinality" : 0.0,
+                                                   "op-cost" : 0.0,
+                                                   "total-cost" : 0.0
+                                                },
+                                                "inputs" : [ {
+                                                   "operator" : "assign",
+                                                   "variables" : [ "$$186", "$$185" ],
+                                                   "expressions" : [ "$$l.getField(6)", "$$l.getField(5)" ],
+                                                   "operatorId" : "1.17",
+                                                   "runtime-id" : "ODID:8.1",
+                                                   "physical-operator" : "ASSIGN",
+                                                   "execution-mode" : "PARTITIONED",
+                                                   "optimizer-estimates" : {
+                                                      "cardinality" : 0.0,
+                                                      "op-cost" : 0.0,
+                                                      "total-cost" : 0.0
+                                                   },
+                                                   "inputs" : [ {
+                                                      "operator" : "project",
+                                                      "variables" : [ "$$177", "$$l" ],
+                                                      "operatorId" : "1.18",
+                                                      "runtime-id" : "ODID:8.0",
+                                                      "physical-operator" : "STREAM_PROJECT",
+                                                      "execution-mode" : "PARTITIONED",
+                                                      "optimizer-estimates" : {
+                                                         "cardinality" : 0.0,
+                                                         "op-cost" : 0.0,
+                                                         "total-cost" : 0.0
+                                                      },
+                                                      "inputs" : [ {
+                                                         "operator" : "exchange",
+                                                         "operatorId" : "1.19",
+                                                         "runtime-id" : "CDID:9",
+                                                         "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                         "execution-mode" : "PARTITIONED",
+                                                         "optimizer-estimates" : {
+                                                            "cardinality" : 0.0,
+                                                            "op-cost" : 0.0,
+                                                            "total-cost" : 0.0
+                                                         },
+                                                         "inputs" : [ {
+                                                            "operator" : "data-scan",
+                                                            "variables" : [ "$$177", "$$178", "$$l" ],
+                                                            "data-source" : "Default.Lineitem_10",
+                                                            "operatorId" : "1.20",
+                                                            "runtime-id" : "ODID:3",
+                                                            "physical-operator" : "DATASOURCE_SCAN",
+                                                            "execution-mode" : "PARTITIONED",
+                                                            "optimizer-estimates" : {
+                                                               "cardinality" : 0.0,
+                                                               "op-cost" : 0.0,
+                                                               "total-cost" : 0.0
+                                                            },
+                                                            "inputs" : [ {
+                                                               "operator" : "exchange",
+                                                               "operatorId" : "1.21",
+                                                               "runtime-id" : "CDID:8",
+                                                               "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                               "execution-mode" : "PARTITIONED",
+                                                               "optimizer-estimates" : {
+                                                                  "cardinality" : 0.0,
+                                                                  "op-cost" : 0.0,
+                                                                  "total-cost" : 0.0
+                                                               },
+                                                               "inputs" : [ {
+                                                                  "operator" : "empty-tuple-source",
+                                                                  "operatorId" : "1.22",
+                                                                  "runtime-id" : "ODID:11.0",
+                                                                  "physical-operator" : "EMPTY_TUPLE_SOURCE",
+                                                                  "execution-mode" : "PARTITIONED",
+                                                                  "optimizer-estimates" : {
+                                                                     "cardinality" : 0.0,
+                                                                     "op-cost" : 0.0,
+                                                                     "total-cost" : 0.0
+                                                                  }
+                                                               } ]
+                                                            } ]
+                                                         } ]
+                                                      } ]
+                                                   } ]
+                                                } ]
+                                             } ]
+                                          } ]
+                                       }, {
+                                          "operator" : "exchange",
+                                          "operatorId" : "1.23",
+                                          "runtime-id" : "CDID:7",
+                                          "physical-operator" : "HASH_PARTITION_EXCHANGE [$$176]",
+                                          "execution-mode" : "PARTITIONED",
+                                          "optimizer-estimates" : {
+                                             "cardinality" : 0.0,
+                                             "op-cost" : 0.0,
+                                             "total-cost" : 0.0
+                                          },
+                                          "inputs" : [ {
+                                             "operator" : "project",
+                                             "variables" : [ "$$175", "$$168", "$$169", "$$170", "$$171", "$$172", "$$176" ],
+                                             "operatorId" : "1.24",
+                                             "runtime-id" : "ODID:13.0",
+                                             "physical-operator" : "STREAM_PROJECT",
+                                             "execution-mode" : "PARTITIONED",
+                                             "optimizer-estimates" : {
+                                                "cardinality" : 0.0,
+                                                "op-cost" : 0.0,
+                                                "total-cost" : 0.0
+                                             },
+                                             "inputs" : [ {
+                                                "operator" : "exchange",
+                                                "operatorId" : "1.25",
+                                                "runtime-id" : "CDID:6",
+                                                "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                "execution-mode" : "PARTITIONED",
+                                                "optimizer-estimates" : {
+                                                   "cardinality" : 0.0,
+                                                   "op-cost" : 0.0,
+                                                   "total-cost" : 0.0
+                                                },
+                                                "inputs" : [ {
+                                                   "operator" : "join",
+                                                   "condition" : "eq($$180, $$175)",
+                                                   "build-side" : 0,
+                                                   "operatorId" : "1.26",
+                                                   "runtime-id" : "ODID:2",
+                                                   "physical-operator" : "HYBRID_HASH_JOIN [$$175][$$180]",
+                                                   "execution-mode" : "PARTITIONED",
+                                                   "optimizer-estimates" : {
+                                                      "cardinality" : 0.0,
+                                                      "op-cost" : 0.0,
+                                                      "total-cost" : 0.0
+                                                   },
+                                                   "inputs" : [ {
+                                                      "operator" : "exchange",
+                                                      "operatorId" : "1.27",
+                                                      "runtime-id" : "CDID:5",
+                                                      "physical-operator" : "HASH_PARTITION_EXCHANGE [$$180]",
+                                                      "execution-mode" : "PARTITIONED",
+                                                      "optimizer-estimates" : {
+                                                         "cardinality" : 0.0,
+                                                         "op-cost" : 0.0,
+                                                         "total-cost" : 0.0
+                                                      },
+                                                      "inputs" : [ {
+                                                         "operator" : "project",
+                                                         "variables" : [ "$$176", "$$180" ],
+                                                         "operatorId" : "1.28",
+                                                         "runtime-id" : "ODID:12.3",
+                                                         "physical-operator" : "STREAM_PROJECT",
+                                                         "execution-mode" : "PARTITIONED",
+                                                         "optimizer-estimates" : {
+                                                            "cardinality" : 0.0,
+                                                            "op-cost" : 0.0,
+                                                            "total-cost" : 0.0
+                                                         },
+                                                         "inputs" : [ {
+                                                            "operator" : "select",
+                                                            "condition" : "and(lt($$174, \"1994-02-01\"), ge($$174, \"1993-10-01\"))",
+                                                            "operatorId" : "1.29",
+                                                            "runtime-id" : "ODID:12.2",
+                                                            "physical-operator" : "STREAM_SELECT",
+                                                            "execution-mode" : "PARTITIONED",
+                                                            "optimizer-estimates" : {
+                                                               "cardinality" : 0.0,
+                                                               "op-cost" : 0.0,
+                                                               "total-cost" : 0.0
+                                                            },
+                                                            "inputs" : [ {
+                                                               "operator" : "project",
+                                                               "variables" : [ "$$176", "$$174", "$$180" ],
+                                                               "operatorId" : "1.30",
+                                                               "runtime-id" : "ODID:12.1",
+                                                               "physical-operator" : "STREAM_PROJECT",
+                                                               "execution-mode" : "PARTITIONED",
+                                                               "optimizer-estimates" : {
+                                                                  "cardinality" : 0.0,
+                                                                  "op-cost" : 0.0,
+                                                                  "total-cost" : 0.0
+                                                               },
+                                                               "inputs" : [ {
+                                                                  "operator" : "assign",
+                                                                  "variables" : [ "$$174", "$$180" ],
+                                                                  "expressions" : [ "$$o.getField(4)", "$$o.getField(1)" ],
+                                                                  "operatorId" : "1.31",
+                                                                  "runtime-id" : "ODID:12.0",
+                                                                  "physical-operator" : "ASSIGN",
+                                                                  "execution-mode" : "PARTITIONED",
+                                                                  "optimizer-estimates" : {
+                                                                     "cardinality" : 0.0,
+                                                                     "op-cost" : 0.0,
+                                                                     "total-cost" : 0.0
+                                                                  },
+                                                                  "inputs" : [ {
+                                                                     "operator" : "exchange",
+                                                                     "operatorId" : "1.32",
+                                                                     "runtime-id" : "CDID:4",
+                                                                     "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                                     "execution-mode" : "PARTITIONED",
+                                                                     "optimizer-estimates" : {
+                                                                        "cardinality" : 0.0,
+                                                                        "op-cost" : 0.0,
+                                                                        "total-cost" : 0.0
+                                                                     },
+                                                                     "inputs" : [ {
+                                                                        "operator" : "data-scan",
+                                                                        "variables" : [ "$$176", "$$o" ],
+                                                                        "data-source" : "Default.Orders_10",
+                                                                        "operatorId" : "1.33",
+                                                                        "runtime-id" : "ODID:1",
+                                                                        "physical-operator" : "DATASOURCE_SCAN",
+                                                                        "execution-mode" : "PARTITIONED",
+                                                                        "optimizer-estimates" : {
+                                                                           "cardinality" : 0.0,
+                                                                           "op-cost" : 0.0,
+                                                                           "total-cost" : 0.0
+                                                                        },
+                                                                        "inputs" : [ {
+                                                                           "operator" : "exchange",
+                                                                           "operatorId" : "1.34",
+                                                                           "runtime-id" : "CDID:3",
+                                                                           "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                                           "execution-mode" : "PARTITIONED",
+                                                                           "optimizer-estimates" : {
+                                                                              "cardinality" : 0.0,
+                                                                              "op-cost" : 0.0,
+                                                                              "total-cost" : 0.0
+                                                                           },
+                                                                           "inputs" : [ {
+                                                                              "operator" : "empty-tuple-source",
+                                                                              "operatorId" : "1.35",
+                                                                              "runtime-id" : "ODID:15.0",
+                                                                              "physical-operator" : "EMPTY_TUPLE_SOURCE",
+                                                                              "execution-mode" : "PARTITIONED",
+                                                                              "optimizer-estimates" : {
+                                                                                 "cardinality" : 0.0,
+                                                                                 "op-cost" : 0.0,
+                                                                                 "total-cost" : 0.0
+                                                                              }
+                                                                           } ]
+                                                                        } ]
+                                                                     } ]
+                                                                  } ]
+                                                               } ]
+                                                            } ]
+                                                         } ]
+                                                      } ]
+                                                   }, {
+                                                      "operator" : "exchange",
+                                                      "operatorId" : "1.36",
+                                                      "runtime-id" : "CDID:2",
+                                                      "physical-operator" : "HASH_PARTITION_EXCHANGE [$$175]",
+                                                      "execution-mode" : "PARTITIONED",
+                                                      "optimizer-estimates" : {
+                                                         "cardinality" : 0.0,
+                                                         "op-cost" : 0.0,
+                                                         "total-cost" : 0.0
+                                                      },
+                                                      "inputs" : [ {
+                                                         "operator" : "project",
+                                                         "variables" : [ "$$175", "$$168", "$$169", "$$170", "$$171", "$$172" ],
+                                                         "operatorId" : "1.37",
+                                                         "runtime-id" : "ODID:10.1",
+                                                         "physical-operator" : "STREAM_PROJECT",
+                                                         "execution-mode" : "PARTITIONED",
+                                                         "optimizer-estimates" : {
+                                                            "cardinality" : 0.0,
+                                                            "op-cost" : 0.0,
+                                                            "total-cost" : 0.0
+                                                         },
+                                                         "inputs" : [ {
+                                                            "operator" : "assign",
+                                                            "variables" : [ "$$172", "$$171", "$$170", "$$169", "$$168" ],
+                                                            "expressions" : [ "$$c.getField(7)", "$$c.getField(4)", "$$c.getField(2)", "$$c.getField(5)", "$$c.getField(1)" ],
+                                                            "operatorId" : "1.38",
+                                                            "runtime-id" : "ODID:10.0",
+                                                            "physical-operator" : "ASSIGN",
+                                                            "execution-mode" : "PARTITIONED",
+                                                            "optimizer-estimates" : {
+                                                               "cardinality" : 0.0,
+                                                               "op-cost" : 0.0,
+                                                               "total-cost" : 0.0
+                                                            },
+                                                            "inputs" : [ {
+                                                               "operator" : "exchange",
+                                                               "operatorId" : "1.39",
+                                                               "runtime-id" : "CDID:1",
+                                                               "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                               "execution-mode" : "PARTITIONED",
+                                                               "optimizer-estimates" : {
+                                                                  "cardinality" : 0.0,
+                                                                  "op-cost" : 0.0,
+                                                                  "total-cost" : 0.0
+                                                               },
+                                                               "inputs" : [ {
+                                                                  "operator" : "unnest-map",
+                                                                  "variables" : [ "$$175", "$$c" ],
+                                                                  "expressions" : [ "index-search(\"Customer_10\", 0, \"Default\", \"Default\", \"Customer_10\", false, false, 1, $$195, 0, false, true, false)" ],
+                                                                  "operatorId" : "1.40",
+                                                                  "runtime-id" : "ODID:0",
+                                                                  "physical-operator" : "BTREE_SEARCH",
+                                                                  "execution-mode" : "PARTITIONED",
+                                                                  "optimizer-estimates" : {
+                                                                     "cardinality" : 0.0,
+                                                                     "op-cost" : 0.0,
+                                                                     "total-cost" : 0.0
+                                                                  },
+                                                                  "inputs" : [ {
+                                                                     "operator" : "exchange",
+                                                                     "operatorId" : "1.41",
+                                                                     "runtime-id" : "CDID:0",
+                                                                     "physical-operator" : "ONE_TO_ONE_EXCHANGE",
+                                                                     "execution-mode" : "PARTITIONED",
+                                                                     "optimizer-estimates" : {
+                                                                        "cardinality" : 0.0,
+                                                                        "op-cost" : 0.0,
+                                                                        "total-cost" : 0.0
+                                                                     },
+                                                                     "inputs" : [ {
+                                                                        "operator" : "assign",
+                                                                        "variables" : [ "$$195" ],
+                                                                        "expressions" : [ "300000" ],
+                                                                        "operatorId" : "1.42",
+                                                                        "runtime-id" : "ODID:16.1",
+                                                                        "physical-operator" : "ASSIGN",
+                                                                        "execution-mode" : "PARTITIONED",
+                                                                        "optimizer-estimates" : {
+                                                                           "cardinality" : 0.0,
+                                                                           "op-cost" : 0.0,
+                                                                           "total-cost" : 0.0
+                                                                        },
+                                                                        "inputs" : [ {
+                                                                           "operator" : "empty-tuple-source",
+                                                                           "operatorId" : "1.43",
+                                                                           "runtime-id" : "ODID:16.0",
+                                                                           "physical-operator" : "EMPTY_TUPLE_SOURCE",
+                                                                           "execution-mode" : "PARTITIONED",
+                                                                           "optimizer-estimates" : {
+                                                                              "cardinality" : 0.0,
+                                                                              "op-cost" : 0.0,
+                                                                              "total-cost" : 0.0
+                                                                           }
+                                                                        } ]
+                                                                     } ]
+                                                                  } ]
+                                                               } ]
+                                                            } ]
+                                                         } ]
+                                                      } ]
+                                                   } ]
+                                                } ]
+                                             } ]
+                                          } ]
+                                       } ]
+                                    } ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               } ]
+            } ]
+         } ]
+      } ]
+   } ]
+}},
+	"status": "success",
+	"metrics": {
+		"elapsedTime": "161.466539711s",
+		"executionTime": "161.231609167s",
+		"compileTime": "2.341458382s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0
+	}
+}

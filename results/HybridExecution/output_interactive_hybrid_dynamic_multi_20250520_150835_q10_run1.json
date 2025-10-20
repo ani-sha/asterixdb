@@ -1,0 +1,22 @@
+{
+	"requestID": "89e9401c-9dd9-43f4-8f09-fd5d318c57de",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "ASX0041: Request 89e9401c-9dd9-43f4-8f09-fd5d318c57de has been cancelled"	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "20.198962105s",
+		"executionTime": "20.025398068s",
+		"compileTime": "2.851628452s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

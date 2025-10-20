@@ -1,0 +1,5 @@
+
+--- Run 1 ---
+Run completed. Output saved to /scratch/SmartRabbitProfilerOutput/HybridExecution/output_blocking_hybrid_dynamic_multi_20250924_205841_q3_run1.json
+Run completed. Output saved to /scratch/SmartRabbitProfilerOutput/HybridExecution/output_interactive_hybrid_dynamic_multi_20250924_205841_q3_run1.json
+Renamed /scratch/asterixdb/results/HybridExecution/InteractiveAnswers to /scratch/asterixdb/results/HybridExecution/InteractiveAnswers_q3_20250924_205841

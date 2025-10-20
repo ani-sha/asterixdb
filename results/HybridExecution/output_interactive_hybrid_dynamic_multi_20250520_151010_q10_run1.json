@@ -1,0 +1,22 @@
+{
+	"requestID": "63bd3eb9-b8a6-4b74-9a28-34952957a59d",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "ASX0041: Request 63bd3eb9-b8a6-4b74-9a28-34952957a59d has been cancelled"	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "220.498346888s",
+		"executionTime": "220.342430088s",
+		"compileTime": "2.062306899s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

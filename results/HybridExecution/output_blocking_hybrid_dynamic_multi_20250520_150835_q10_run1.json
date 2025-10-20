@@ -1,0 +1,22 @@
+{
+	"requestID": "d154e526-30b8-47e8-ac22-109aaa91408d",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "ASX0041: Request d154e526-30b8-47e8-ac22-109aaa91408d has been cancelled"	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "20.19896522s",
+		"executionTime": "20.025399179s",
+		"compileTime": "2.878766404s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

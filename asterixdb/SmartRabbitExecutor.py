@@ -714,7 +714,7 @@ interactive_query_q8_dynamic = (
     'JOIN Nation_10 n2 ON s.s_nationkey /*+ indexnl */ = n2.n_nationkey '
     'WHERE r.r_name = "AMERICA" '
     'AND o.o_orderdate > "1995-01-01" '
-    'AND o.o_orderdate < "1995-05-15" '
+    'AND o.o_orderdate < "1995-02-15" '
     'AND p.p_type = "ECONOMY ANODIZED STEEL" '
     'GROUP BY o.o_orderdate;'
 )

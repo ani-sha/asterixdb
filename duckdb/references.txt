@@ -1,0 +1,2 @@
+Everything about tpch in duckdb can be found here:
+https://duckdb.org/docs/stable/core_extensions/tpch

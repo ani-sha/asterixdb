@@ -7,7 +7,8 @@ public class DynamicFilterSerializer {
 
     public static final byte TAG_INT32 = 0x03;  // INTEGER ordinal
     public static final byte TAG_INT64 = 0x04;  // BIGINT ordinal
-    public static final byte TAG_STRING = 0x0D; // STRING ordinal
+    public static final byte TAG_STRING = 0x0D;
+    public static final byte TAG_DOUBLE = 0x0C;// STRING ordinal
 
     public static byte[] serialize(String value, String type) {
         switch (type) {
@@ -17,9 +18,18 @@ public class DynamicFilterSerializer {
                 return serializeInt64(Long.parseLong(value.trim()));
             case "string":
                 return serializeString(value.trim());
+            case "double":
+                return serializeDouble(Double.parseDouble(value.trim()));
             default:
                 throw new IllegalArgumentException("Unsupported type for dynamic serialization: " + type);
         }
+    }
+
+    private static byte[] serializeDouble(double v) {
+        byte[] bytes = new byte[1 + 8]; // 1 for tag, 8 for double (IEEE 754)
+        bytes[0] = TAG_DOUBLE;          // define TAG_DOUBLE alongside your other tags
+        ByteBuffer.wrap(bytes, 1, 8).putDouble(v);
+        return bytes;
     }
 
     public static byte[] serializeInt32(int value) {

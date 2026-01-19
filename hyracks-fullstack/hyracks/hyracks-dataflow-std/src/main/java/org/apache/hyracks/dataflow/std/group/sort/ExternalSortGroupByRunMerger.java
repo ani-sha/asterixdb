@@ -63,6 +63,8 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
     private final int[] mergeGroupFields;
     private final IBinaryComparator[] groupByComparators;
     private boolean isGlobalGBY;
+    private static final Path HYBRID_DIR = Paths.get("results", "HybridExecution");
+    private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public ExternalSortGroupByRunMerger(IHyracksTaskContext ctx, List<GeneratedRunFileReader> runs, int[] sortFields,
             RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
@@ -78,64 +80,9 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.partialAggregatorFactory = partialAggregatorFactory;
         this.localSide = localStage;
         this.isGlobalGBY = isGlobalGBY;
-
-        Path baseDir = Paths.get("results/HybridExecution/");
-
-        //String signalFilePath = baseDir + "/B2ISignal";
-        Instant startTime = Instant.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-        Path outputFilePath = baseDir.resolve("B2ISignal");
-
-        System.out.println("This is when a B2I Signal goes out"  + LocalDateTime.now().format(formatter));
-                if(isGlobalGBY) {
-                    System.out.println("Sent signal to " + outputFilePath + " to stop interactive processing at "
-                            + LocalDateTime.now().format(formatter));
-
-                    try {
+        maybeSendB2ISignalAndWait(isGlobalGBY);
 
 
-                        // Write your signal file
-                        Files.write(outputFilePath, "Yes.".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-                        Set<Path> confirmedFiles = new HashSet<>();
-
-
-
-
-                        while (true) {
-                            try (Stream<Path> files = Files.list(baseDir)
-                                    .filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
-                                files.forEach(path -> {
-                                    try {
-                                        if (!confirmedFiles.contains(path)) {
-                                            String content = Files.readString(path).trim();
-                                            if ("Yes".equals(content)) {
-                                                confirmedFiles.add(path);
-                                                System.out.println("Received ok from: " + path.getFileName());
-                                            }
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace(); // File might be gone between listing and reading
-                                    }
-                                });
-                            }
-
-                            if (confirmedFiles.size() >= 1) {
-                                System.out.println("Received 4 'Yes' signals from interactive plan.");
-                                break;
-                            }
-
-                            if (Duration.between(startTime, Instant.now()).getSeconds() > 180) {
-                                throw new IOException("Timeout: Did not receive 4 'Yes' signals within 3 minutes.");
-                            }
-
-                            Thread.sleep(500); // Sleep before polling again
-                        }
-
-                    } catch (IOException | InterruptedException e) {
-                        throw new IOException("Error while waiting for I2BSignal or writing to B2ISignal", e);
-                    }
-                }
 
         //create merge sort fields
         int numSortFields = sortFields.length;
@@ -172,65 +119,7 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.partialAggregatorFactory = partialAggregatorFactory;
         this.localSide = localStage;
 
-        Path baseDir = Paths.get("/scratch/asterixdb/results/HybridExecution/");
-
-        //String signalFilePath = baseDir + "/B2ISignal";
-        Instant startTime = Instant.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-        Path outputFilePath = baseDir.resolve("B2ISignal");
-        System.out.println("Sent signal to " + outputFilePath + " to stop interactive processing at "
-                + LocalDateTime.now().format(formatter));
-
-        if(isGlobalGBY) {
-
-            try {
-
-
-                // Write your signal file
-                Files.write(outputFilePath, "Yes.".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-
-
-                Set<Path> confirmedFiles = new HashSet<>();
-
-
-
-
-                while (true) {
-                    try (Stream<Path> files = Files.list(baseDir)
-                            .filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
-                        files.forEach(path -> {
-                            try {
-                                if (!confirmedFiles.contains(path)) {
-                                    String content = Files.readString(path).trim();
-                                    if ("Yes".equals(content)) {
-                                        confirmedFiles.add(path);
-                                        System.out.println("Received ok from: " + path.getFileName());
-                                    }
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace(); // File might be gone between listing and reading
-                            }
-                        });
-                    }
-
-                    if (confirmedFiles.size() >= 1) {
-                        System.out.println("Received 4 'Yes' signals from interactive plan.");
-                        break;
-                    }
-
-                    if (Duration.between(startTime, Instant.now()).getSeconds() > 180) {
-                        throw new IOException("Timeout: Did not receive 4 'Yes' signals within 3 minutes.");
-                    }
-
-                    Thread.sleep(500); // Sleep before polling again
-                }
-
-            } catch (IOException | InterruptedException e) {
-                throw new IOException("Error while waiting for I2BSignal or writing to B2ISignal", e);
-            }
-        }
-
+        maybeSendB2ISignalAndWait(isGlobalGBY);
         //create merge sort fields
 
 
@@ -255,6 +144,67 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         groupByComparators = new IBinaryComparator[Math.min(mergeGroupFields.length, comparators.length)];
         for (int i = 0; i < groupByComparators.length; i++) {
             groupByComparators[i] = comparators[i];
+        }
+    }
+
+    private static void maybeSendB2ISignalAndWait(boolean shouldSignal) throws IOException {
+        if (!shouldSignal) {
+            return;
+        }
+
+        Files.createDirectories(HYBRID_DIR);
+
+        final Path b2iPath = HYBRID_DIR.resolve("B2ISignal");
+        final Instant startTime = Instant.now();
+
+        System.out.println("This is when a B2I Signal goes out at " + LocalDateTime.now().format(TS_FMT));
+        System.out.println("Sent signal to " + b2iPath.toAbsolutePath()
+                + " to stop interactive processing at " + LocalDateTime.now().format(TS_FMT));
+
+        // Match ResultWriter's check for B2ISignal: "Yes."
+        Files.writeString(b2iPath, "Yes.", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+        final int requiredAcks = 1; // your existing code breaks at >= 1, so keep it consistent
+        final Set<Path> confirmedFiles = new HashSet<>();
+
+        while (true) {
+            try (Stream<Path> files = Files.list(HYBRID_DIR)
+                    .filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
+
+                files.forEach(path -> {
+                    if (confirmedFiles.contains(path)) {
+                        return;
+                    }
+                    try {
+                        String content = Files.readString(path).trim();
+                        // ResultWriter writes "Yes" (no dot) to I2BSignal
+                        if ("Yes".equals(content)) {
+                            confirmedFiles.add(path);
+                            System.out.println("Received ok from: " + path.getFileName());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
+            if (confirmedFiles.size() >= requiredAcks) {
+                System.out.println("Received " + confirmedFiles.size()
+                        + " 'Yes' signal(s) from interactive plan.");
+                break;
+            }
+
+            if (Duration.between(startTime, Instant.now()).getSeconds() > 180) {
+                throw new IOException("Timeout: Did not receive " + requiredAcks
+                        + " 'Yes' signal(s) within 3 minutes.");
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while waiting for I2BSignal", ie);
+            }
         }
     }
 

@@ -13,7 +13,7 @@ def _apply_sf_suffix(sql: str, sf: int) -> str:
     Leaves non-TPC-H tables (e.g., SSB_*) untouched.
     """
     import re
-    pattern = re.compile(r'\b(Customer|Lineitem|Nation|Orders|Part|Partsupp|Region|Supplier)(?:_\d+)?\b')
+    pattern = re.compile(r'\b(Customer|Lineitem|Nation|Orders|Part|Partsupp|Region|Supplier|MinCost|HalfSumQty)(?:_\d+)?\b')
     return pattern.sub(lambda m: f"{m.group(1)}_{sf}", sql)
 
 def _is_ssb(base_q: str) -> bool:
@@ -60,9 +60,15 @@ def resolve_queries(query: str, sf: str, strategy: str,
         "q8": (blocking_query_q8, interactive_query_q8),
         "q9": (blocking_query_q9, interactive_query_q9),
         "q10": (blocking_query_q10, interactive_query_q10),
+        "q11": (blocking_query_q11, interactive_query_q11),
         "q12": (blocking_query_q12, interactive_query_q12),
         "q16": (blocking_query_q16, interactive_query_q16),
         "q18": (blocking_query_q18, interactive_query_q18),
+        "q20": (blocking_query_q20, interactive_query_q20),
+        "q21": (blocking_query_q21, interactive_query_q21),
+        "q22": (blocking_query_q22, interactive_query_q22),
+        "q2": (blocking_query_q2, interactive_query_q2),
+        "q7": (blocking_query_q7, interactive_query_q7),
 
         "SSB_q21": (blocking_query_SSB_q21, interactive_query_SSB_q21),
         "SSB_q22": (blocking_query_SSB_q22, interactive_query_SSB_q22),
@@ -443,10 +449,10 @@ blocking_query_q4_dynamic = (
     ') a WHERE a.o_orderpriority >= "2-HIGH"'
 )
 
-interactive_query_q5 = 'SET `compiler.interactive.mode` "true";  SELECT n.n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue FROM Nation_10 n, Region_10 r, Supplier_10 s, Customer_10 c, Lineitem_10 l, Orders_10 o WHERE n.n_regionkey /* +indexnl */ = r.r_regionkey AND n.n_nationkey /* +indexnl */ = s.s_nationkey AND n.n_nationkey /* +indexnl */ = c.c_nationkey AND c.custkey /* +indexnl */ = o.o_custkey AND o.o_orderkey /* +indexnl */ = l.l_orderkey AND s.s_suppkey /* +indexnl */ = l.l_suppkey AND r.r_name = "ASIA" AND o.o_orderdate >= "1994-01-01" AND o.o_orderdate < "1995-01-01" AND n.n_name = "INDIA" and o.o_orderkey = 1  GROUP BY n.n_name'
-
-blocking_query_q5 = "SELECT n.n_name AS n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue FROM Customer_10 c, Orders_10 o, Lineitem_10 l, Supplier_10 s, Nation_10 n, Region_10 r WHERE c.c_custkey = o.o_custkey AND l.l_orderkey = o.o_orderkey AND l.l_suppkey = s.s_suppkey AND c.c_nationkey = s.s_nationkey AND s.s_nationkey = n.n_nationkey AND n.n_regionkey = r.r_regionkey AND r.r_name = \"ASIA\" AND o.o_orderdate >= \"1994-01-01\" AND o.o_orderdate < \"1995-01-01\" GROUP BY n.n_name"
-#interactive_query_q9 = 'SET `compiler.interactive.mode` "true"; SELECT n.n_name AS nation, SUM(l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity) AS sum_profit FROM Nation_10 AS n JOIN Supplier_10 AS s ON n.n_nationkey /*+ indexnl */ = s.s_nationkey JOIN Partsupp_10 AS ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey JOIN Part_10 AS p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey JOIN Lineitem_10 AS l ON ps.ps_partkey /*+ indexnl */ = l.l_partkey AND ps.ps_suppkey /*+ indexnl */ = l.l_suppkey WHERE p.p_name LIKE "%green%" AND n.n_name <= "E" GROUP BY n.n_name'
+# interactive_query_q5 = 'SET `compiler.interactive.mode` "true";  SELECT n.n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue FROM Nation_10 n, Region_10 r, Supplier_10 s, Customer_10 c, Lineitem_10 l, Orders_10 o WHERE n.n_regionkey /* +indexnl */ = r.r_regionkey AND n.n_nationkey /* +indexnl */ = s.s_nationkey AND n.n_nationkey /* +indexnl */ = c.c_nationkey AND c.custkey /* +indexnl */ = o.o_custkey AND o.o_orderkey /* +indexnl */ = l.l_orderkey AND s.s_suppkey /* +indexnl */ = l.l_suppkey AND r.r_name = "ASIA" AND o.o_orderdate >= "1994-01-01" AND o.o_orderdate < "1995-01-01" AND n.n_name = "INDIA" and o.o_orderkey = 1  GROUP BY n.n_name'
+#
+# blocking_query_q5 = "SELECT n.n_name AS n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue FROM Customer_10 c, Orders_10 o, Lineitem_10 l, Supplier_10 s, Nation_10 n, Region_10 r WHERE c.c_custkey = o.o_custkey AND l.l_orderkey = o.o_orderkey AND l.l_suppkey = s.s_suppkey AND c.c_nationkey = s.s_nationkey AND s.s_nationkey = n.n_nationkey AND n.n_regionkey = r.r_regionkey AND r.r_name = \"ASIA\" AND o.o_orderdate >= \"1994-01-01\" AND o.o_orderdate < \"1995-01-01\" GROUP BY n.n_name"
+# #interactive_query_q9 = 'SET `compiler.interactive.mode` "true"; SELECT n.n_name AS nation, SUM(l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity) AS sum_profit FROM Nation_10 AS n JOIN Supplier_10 AS s ON n.n_nationkey /*+ indexnl */ = s.s_nationkey JOIN Partsupp_10 AS ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey JOIN Part_10 AS p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey JOIN Lineitem_10 AS l ON ps.ps_partkey /*+ indexnl */ = l.l_partkey AND ps.ps_suppkey /*+ indexnl */ = l.l_suppkey WHERE p.p_name LIKE "%green%" AND n.n_name <= "E" GROUP BY n.n_name'
 blocking_query_q9 = 'SELECT n.n_name AS nation, SUM(l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity) AS sum_profit FROM Part_10 AS p JOIN Lineitem_10 AS l ON l.l_partkey = p.p_partkey JOIN Partsupp_10 AS ps ON ps.ps_partkey = l.l_partkey AND ps.ps_suppkey = l.l_suppkey JOIN Supplier_10 AS s ON s.s_suppkey = l.l_suppkey JOIN Nation_10 AS n ON s.s_nationkey = n.n_nationkey WHERE p.p_name LIKE "%green%" GROUP BY n.n_name ORDER BY n.n_name'
 interactive_query_q12 = 'SET `compiler.interactive.mode` "true"; SELECT l.l_shipmode AS l_shipmode, SUM(CASE WHEN o.o_orderpriority = "1-URGENT" OR o.o_orderpriority = "2-HIGH" THEN 1 ELSE 0 END) AS high_line_count, SUM(CASE WHEN o.o_orderpriority != "1-URGENT" AND o.o_orderpriority != "2-HIGH" THEN 1 ELSE 0 END) AS low_line_count FROM Lineitem_10 AS l, Orders_10 AS o  WHERE l.l_orderkey /* +indexnl */ = o.o_orderkey AND    l.l_shipmode ="MAIL" AND l.l_commitdate < l.l_receiptdate AND l.l_shipdate < l.l_commitdate AND l.l_receiptdate >= "1994-01-01" AND l.l_receiptdate < "1995-01-01" GROUP BY l.l_shipmode'
 blocking_query_q12 = 'SELECT l.l_shipmode AS l_shipmode, SUM(CASE WHEN o.o_orderpriority = "1-URGENT" OR o.o_orderpriority = "2-HIGH" THEN 1 ELSE 0 END) AS high_line_count, SUM(CASE WHEN o.o_orderpriority != "1-URGENT" AND o.o_orderpriority != "2-HIGH" THEN 1 ELSE 0 END) AS low_line_count FROM Orders_10 AS o, Lineitem_10 AS l WHERE o.o_orderkey = l.l_orderkey AND l.l_shipmode in("MAIL", "SHIP") AND l.l_commitdate < l.l_receiptdate AND l.l_shipdate < l.l_commitdate AND l.l_receiptdate >= "1994-01-01" AND l.l_receiptdate < "1995-01-01" GROUP BY l.l_shipmode ORDER BY l.l_shipmode'
@@ -556,7 +562,7 @@ interactive_query_q18 = (
      "FROM Orders_10 o "
      "JOIN Lineitem_10 l ON o.o_orderkey /*+ indexnl */ = l.l_orderkey "
      "JOIN Customer_10 c ON o.o_custkey /*+ indexnl */ = c.c_custkey "
-     "WHERE o.o_totalprice > 450000 AND l.l_quantity > 40 "
+     "WHERE o.o_totalprice > 450000 AND l.l_quantity > 45 "
      "GROUP BY o.o_totalprice, o.o_orderkey, c.c_name, c.c_custkey, o.o_orderdate;"
  )
 
@@ -567,9 +573,10 @@ interactive_query_q18_dynamic = (
   "FROM Orders_10 o "
   "JOIN Lineitem_10 l ON o.o_orderkey /*+ indexnl */ = l.l_orderkey "
   "JOIN Customer_10 c ON o.o_custkey /*+ indexnl */ = c.c_custkey "
-  "WHERE o.o_totalprice > 450000 AND l.l_quantity > 40 "
+  "WHERE o.o_totalprice > 250000 AND l.l_quantity > 45 "
   "GROUP BY o.o_totalprice, o.o_orderkey, c.c_name, c.c_custkey, o.o_orderdate;"
 )
+
 blocking_query_q1_30 = "SELECT l_returnflag, l_linestatus, SUM(l_quantity) AS sum_qty, SUM(l_extendedprice) AS sum_base_price, SUM(l_extendedprice * (1 - l_discount)) AS sum_disc_price, SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge, AVG(l_quantity) AS avg_qty, AVG(l_extendedprice) AS avg_price, AVG(l_discount) AS avg_disc, COUNT(*) AS count_order FROM Lineitem_10 WHERE l_shipdate <= \"1998-09-01\" GROUP BY l_returnflag, l_linestatus"
 interactive_query_q1_30 =  "SET `compiler.interactive.mode` \"true\"; SELECT l_returnflag, l_linestatus, SUM(l_quantity) AS sum_qty, SUM(l_extendedprice) AS sum_base_price, SUM(l_extendedprice * (1 - l_discount)) AS sum_disc_price, SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge, AVG(l_quantity) AS avg_qty, AVG(l_extendedprice) AS avg_price, AVG(l_discount) AS avg_disc, COUNT(*) AS count_order FROM Lineitem_10 WHERE l_shipdate <= \"1998-09-01\" AND l_returnflag = \"N\" GROUP BY l_returnflag, l_linestatus"
 
@@ -587,11 +594,10 @@ interactive_query_q1_30 =  "SET `compiler.interactive.mode` \"true\"; SELECT l_r
 blocking_query_q18 = (
      "SELECT o.o_totalprice, o.o_orderkey, c.c_name, c.c_custkey, o.o_orderdate, "
      "SUM(l.l_quantity) AS total_quantity "
-     "FROM Orders_10 o, Lineitem_10 l, Customer_10 c "
-     "WHERE o.o_orderkey = l.l_orderkey "
-     "AND  o.o_orderkey = c.c_custkey "
-     "AND o.o_totalprice > 450000 "
-     "AND l.l_quantity > 40 "
+     "FROM Orders_10 o "
+      "JOIN Lineitem_10 l ON o.o_orderkey  = l.l_orderkey "
+      "JOIN Customer_10 c ON o.o_custkey = c.c_custkey "
+     "WHERE l.l_quantity > 45 "
      "GROUP BY o.o_totalprice, o.o_orderkey, c.c_name, c.c_custkey, o.o_orderdate;"
  )
 
@@ -604,9 +610,8 @@ blocking_query_q18_dynamic = (
     'SUM(l.l_quantity) AS total_quantity '
     'FROM Orders_10 o, Lineitem_10 l, Customer_10 c '
     'WHERE o.o_orderkey = l.l_orderkey '
-    'AND  o.o_orderkey = c.c_custkey '
-    'AND o.o_totalprice > 450000 '
-    'AND l.l_quantity > 40 '
+    'AND  o.o_custkey = c.c_custkey '
+    'AND l.l_quantity > 45 '
     'GROUP BY o.o_totalprice, o.o_orderkey, c.c_name, c.c_custkey, o.o_orderdate '
     ') a WHERE a.o_totalprice > 10000;'
 )
@@ -629,6 +634,7 @@ interactive_query_q16_dynamic = (
       'FROM Part_10 p, Partsupp_10 ps '
       'WHERE p.p_partkey /*+ indexnl */ = ps.ps_partkey '
       'AND p.p_brand > "Brand#45" '
+      'AND p.p_brand < "Brand#52" '
       'AND p.p_type NOT LIKE "MEDIUM POLISHED%" '
       'AND p.p_size = 16 '
       'GROUP BY p.p_brand, p.p_type, p.p_size;'
@@ -639,7 +645,7 @@ blocking_query_q16 = (
 
       'SELECT p.p_brand, p.p_type, p.p_size, COUNT( ps.ps_suppkey) AS supplier_cnt '
       'FROM  Partsupp_10 ps, Part_10 p '
-      'WHERE  ps.ps_partkey = p.p_partkey '
+      'WHERE p.p_partkey /*+ indexnl */ = ps.ps_partkey '
       'AND p.p_type NOT LIKE "MEDIUM POLISHED%" '
       'AND p.p_size = 16 '
       'GROUP BY p.p_brand, p.p_type, p.p_size;'
@@ -650,7 +656,7 @@ blocking_query_q16_dynamic = (
                 'SELECT a.* FROM( '
         'SELECT p.p_brand, p.p_type, p.p_size, COUNT( ps.ps_suppkey) AS supplier_cnt '
         'FROM  Partsupp_10 ps, Part_10 p '
-        'WHERE  ps.ps_partkey = p.p_partkey '
+        'WHERE p.p_partkey /*+ indexnl */ = ps.ps_partkey '
         'AND p.p_type NOT LIKE "MEDIUM POLISHED%" '
         'AND p.p_brand > "Brand#45" '
         'AND p.p_size = 16 '
@@ -741,6 +747,482 @@ blocking_query_q8_dynamic = (
         'ORDER BY o.o_orderdate'
         ')a where a.o_orderdate > "1995-01-01"'
             )
+blocking_query_q11 = (
+    'SELECT ps.ps_partkey AS ps_partkey, '
+    'SUM(ps.ps_supplycost * ps.ps_availqty) AS ps_value '
+    'FROM Nation_10 AS n '
+    'JOIN Supplier_10 AS s ON n.n_nationkey = s.s_nationkey '
+    'JOIN Partsupp_10 AS ps ON s.s_suppkey = ps.ps_suppkey '
+    'WHERE n.n_name = "GERMANY" '
+    'GROUP BY ps.ps_partkey '
+    'HAVING SUM(ps.ps_supplycost * ps.ps_availqty) > 7874103.109405;'
+)
+
+blocking_query_q11_dynamic = (
+    'SET `compiler.blocking.mode` `true`; '
+    'SELECT a.* FROM ('
+    'SELECT ps.ps_partkey AS ps_partkey, '
+    'SUM(ps.ps_supplycost * ps.ps_availqty) AS ps_value '
+    'FROM Nation_10 AS n '
+    'JOIN Supplier_10 AS s ON n.n_nationkey = s.s_nationkey '
+    'JOIN Partsupp_10 AS ps ON s.s_suppkey = ps.ps_suppkey '
+    'WHERE n.n_name = "GERMANY" '
+    'GROUP BY ps.ps_partkey '
+    'HAVING SUM(ps.ps_supplycost * ps.ps_availqty) > 7874103.109405'
+    ') a WHERE a.ps_partkey > 200000;'
+)
+
+interactive_query_q11 = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT ps.ps_partkey AS ps_partkey, '
+    'SUM(ps.ps_supplycost * ps.ps_availqty) AS ps_value '
+    'FROM Partsupp_10 AS ps '
+    'JOIN Supplier_10 AS s ON ps.ps_suppkey /*+ indexnl */ = s.s_suppkey '
+    'WHERE s.s_nationkey = 7 '
+    'AND ps.ps_partkey < 12000000 '
+    'GROUP BY ps.ps_partkey '
+    'HAVING SUM(ps.ps_supplycost * ps.ps_availqty) > 7874103.109405;'
+)
+
+interactive_query_q11_dynamic = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT ps.ps_partkey AS ps_partkey, '
+    'SUM(ps.ps_supplycost * ps.ps_availqty) AS ps_value '
+    'FROM Partsupp_10 AS ps '
+    'JOIN Supplier_10 AS s ON ps.ps_suppkey /*+ indexnl */ = s.s_suppkey '
+    'WHERE s.s_nationkey = 7 '
+    'AND ps.ps_partkey < 12000000 '
+    'GROUP BY ps.ps_partkey '
+    'HAVING SUM(ps.ps_supplycost * ps.ps_availqty) > 7874103.109405;'
+)
+# interactive_query_q20 = (
+#     'SELECT s.s_name, s.s_address '
+#     'FROM Supplier_10 AS s '
+#     'JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+#     'WHERE n.n_name = "CANADA" '
+#     'AND s.s_name < "Supplier#000000530";'
+# )
+# blocking_query_q20 = (
+#     'SELECT s.s_name, s.s_address '
+#     'FROM Supplier_10 AS s, Nation_10 AS n '
+#     'WHERE s.s_nationkey = n.n_nationkey '
+#     'AND n.n_name = "CANADA" '
+#     'ORDER BY s.s_name;'
+# )
+# interactive_query_q20_dynamic = (
+#     'SELECT s.s_name, s.s_address '
+#     'FROM Supplier_10 AS s '
+#     'JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+#     'WHERE s.s_name < "Supplier#003000000"'
+#     'AND n.n_name = "CANADA" '
+# )
+blocking_query_q20 = (
+    "SELECT s.s_name, s.s_address "
+    "FROM Supplier_10 AS s "
+    "JOIN Nation_10 AS n ON s.s_nationkey = n.n_nationkey "
+    "JOIN Partsupp_10 AS ps ON s.s_suppkey = ps.ps_suppkey "
+    "JOIN Part_10 AS p ON ps.ps_partkey = p.p_partkey "
+    "LEFT JOIN HalfSumQty_10 AS h "
+    "  ON h.l_partkey = ps.ps_partkey AND h.l_suppkey = ps.ps_suppkey "
+    "WHERE n.n_name = \"CANADA\" "
+    "AND p.p_name LIKE \"forest%\" "
+    "AND ps.ps_availqty > COALESCE(h.half_sum_qty, 0) "
+    "GROUP BY s.s_name, s.s_address "
+    "ORDER BY s.s_name;"
+)
+
+blocking_query_q20_dynamic = (
+    "SET `compiler.blocking.mode` \"true\"; "
+    "SELECT a.* FROM ("
+        "SELECT s.s_name, s.s_address "
+        "FROM Supplier_10 AS s "
+        "JOIN Nation_10 AS n ON s.s_nationkey = n.n_nationkey "
+        "JOIN Partsupp_10 AS ps ON s.s_suppkey = ps.ps_suppkey "
+        "JOIN Part_10 AS p ON ps.ps_partkey = p.p_partkey "
+        "LEFT JOIN HalfSumQty_10 AS h "
+        "  ON h.l_partkey = ps.ps_partkey AND h.l_suppkey = ps.ps_suppkey "
+        "WHERE n.n_name = \"CANADA\" "
+        "AND p.p_name LIKE \"forest%\" "
+        "AND ps.ps_availqty > COALESCE(h.half_sum_qty, 0) "
+        "GROUP BY s.s_name, s.s_address "
+        "ORDER BY s.s_name"
+     ") a WHERE a.s_name > \"\";"
+)
+interactive_query_q20_dynamic = (
+    "SET `compiler.interactive.mode` \"true\"; "
+    "SELECT s.s_name, s.s_address "
+    "FROM Supplier_10 AS s "
+    "JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey "
+    "JOIN Partsupp_10 AS ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey "
+    "JOIN Part_10 AS p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey "
+    "LEFT JOIN HalfSumQty_10 AS h "
+    "  ON h.l_partkey /*+ indexnl */ = ps.ps_partkey AND h.l_suppkey = ps.ps_suppkey "
+    "WHERE n.n_name = \"CANADA\" "
+    "AND p.p_name LIKE \"forest%\" "
+    "AND ps.ps_availqty > COALESCE(h.half_sum_qty, 0) "
+    "AND s.s_name < \"Supplier#003000000\" "
+    "GROUP BY s.s_name, s.s_address "
+)
+interactive_query_q20 = (
+    "SET `compiler.interactive.mode` \"true\"; "
+    "SELECT s.s_name, s.s_address "
+    "FROM Supplier_10 AS s "
+    "JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey "
+    "JOIN Partsupp_10 AS ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey "
+    "JOIN Part_10 AS p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey "
+    "LEFT JOIN HalfSumQty_10 AS h "
+    "  ON h.l_partkey /*+ indexnl */ = ps.ps_partkey AND h.l_suppkey = ps.ps_suppkey "
+    "WHERE n.n_name = \"CANADA\" "
+    "AND p.p_name LIKE \"forest%\" "
+    "AND ps.ps_availqty > COALESCE(h.half_sum_qty, 0) "
+    "AND s.s_name < \"Supplier#000300000\" "
+    "GROUP BY s.s_name, s.s_address "
+)
+
+
+# blocking_query_q20_dynamic = (
+#     'SELECT s.s_name, s.s_address '
+#     'FROM Supplier_10 AS s, Nation_10 AS n '
+#     'WHERE s.s_nationkey = n.n_nationkey '
+#     'AND n.n_name = "CANADA" '
+#     'ORDER BY s.s_name;'
+# )
+
+interactive_query_q21 = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT s.s_name, COUNT(*) AS numwait '
+    'FROM Supplier_10 AS s '
+    'JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+    'JOIN Lineitem_10 AS l1 ON s.s_suppkey /*+ indexnl */ = l1.l_suppkey '
+    'JOIN Orders_10 AS o ON l1.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'WHERE o.o_orderstatus = "F" '
+    'AND l1.l_receiptdate > l1.l_commitdate '
+    'AND n.n_name = "SAUDI ARABIA" '
+    'AND s.s_name < "Supplier#000000530" '
+    'GROUP BY s.s_name;'
+)
+blocking_query_q21 = (
+
+    'SELECT s.s_name, COUNT(*) AS numwait '
+    'FROM Supplier_10 AS s '
+    'JOIN Nation_10 AS n ON s.s_nationkey = n.n_nationkey '
+    'JOIN Lineitem_10 AS l1 ON s.s_suppkey  = l1.l_suppkey '
+    'JOIN Orders_10 AS o ON l1.l_orderkey  = o.o_orderkey '
+    'WHERE o.o_orderstatus = "F" '
+    'AND l1.l_receiptdate > l1.l_commitdate '
+    'AND n.n_name = "SAUDI ARABIA" '
+    'GROUP BY s.s_name;'
+)
+
+blocking_query_q21_dynamic = (
+    'SELECT s.s_name, COUNT(*) AS numwait '
+    'FROM Supplier_10 AS s '
+    'JOIN Nation_10 AS n ON s.s_nationkey = n.n_nationkey '
+    'JOIN Lineitem_10 AS l1 ON s.s_suppkey  = l1.l_suppkey '
+    'JOIN Orders_10 AS o ON l1.l_orderkey  = o.o_orderkey '
+    'WHERE o.o_orderstatus = "F" '
+    'AND l1.l_receiptdate > l1.l_commitdate '
+    'AND n.n_name = "SAUDI ARABIA" '
+    'GROUP BY s.s_name;'
+)
+
+interactive_query_q21_dynamic = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT s.s_name, COUNT(*) AS numwait '
+    'FROM Supplier_10 AS s '
+    'JOIN Nation_10 AS n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+    'JOIN Lineitem_10 AS l1 ON s.s_suppkey /*+ indexnl */ = l1.l_suppkey '
+    'JOIN Orders_10 AS o ON l1.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'WHERE o.o_orderstatus = "F" '
+    'AND l1.l_receiptdate > l1.l_commitdate '
+    'AND n.n_name = "SAUDI ARABIA" '
+    'AND s.s_name < "Supplier#000025530" '
+    'GROUP BY s.s_name;'
+)
+blocking_query_q22 = (
+    "SELECT substring(c.c_phone,0,2) AS cntrycode, "
+    "COUNT(*) AS numcust, "
+    "SUM(if_missing(if_null(c.c_acctbal,0.0),0.0)) AS totacctbal "
+    "FROM Customer_10 c "
+    "LEFT JOIN Orders_10 o ON c.c_custkey = o.o_custkey "
+    "WHERE substring(c.c_phone,0,2) IN (\"13\",\"31\",\"23\",\"29\",\"30\",\"18\",\"17\") "
+    "AND c.c_acctbal > 5000 "
+    "AND o.o_orderkey IS MISSING "
+    "GROUP BY substring(c.c_phone,0,2) "
+    "ORDER BY cntrycode;"
+)
+
+blocking_query_q22_dynamic = (
+    "SET `compiler.blocking.mode` `true`; "
+    "SELECT a.* FROM ( "
+    "SELECT substring(c.c_phone,0,2) AS cntrycode, "
+    "COUNT(*) AS numcust, "
+    "SUM(if_missing(if_null(c.c_acctbal,0.0),0.0)) AS totacctbal "
+    "FROM Customer_10 c "
+    "LEFT JOIN Orders_10 o ON c.c_custkey = o.o_custkey "
+    "WHERE substring(c.c_phone,0,2) IN (\"13\",\"31\",\"23\",\"29\",\"30\",\"18\",\"17\") "
+    "AND c.c_acctbal > 5000 "
+    "AND o.o_orderkey IS MISSING "
+    "GROUP BY substring(c.c_phone,0,2) "
+    "ORDER BY cntrycode "
+    ") a WHERE a.cntrycode > \"13\";"
+)
+interactive_query_q22 = (
+    'SELECT COUNT(*) AS numcust, '
+    'SUM(if_missing(if_null(c.c_acctbal,0.0),0.0)) AS totacctbal '
+    'FROM Customer_10 AS c '
+    'WHERE c.c_phone >= "13" AND c.c_phone < "14" '
+    'AND c.c_acctbal > 5000 '
+    'AND NOT EXISTS ( '
+    'SELECT 1 FROM Orders_10 AS o '
+    'WHERE c.c_custkey /*+ indexnl */ = o.o_custkey '
+    ');'
+)
+interactive_query_q22_dynamic = (
+    'SELECT COUNT(*) AS numcust, '
+    'SUM(if_missing(if_null(c.c_acctbal,0.0),0.0)) AS totacctbal '
+    'FROM Customer_10 AS c '
+    'WHERE c.c_phone >= "13" AND c.c_phone < "14" '
+    'AND c.c_acctbal > 5000 '
+    'AND NOT EXISTS ( '
+    'SELECT 1 FROM Orders_10 AS o '
+    'WHERE c.c_custkey /*+ indexnl */ = o.o_custkey '
+    ');'
+)
+
+interactive_query_q2 = (
+
+    'SELECT s.s_acctbal, s.s_name, n.n_name, p.p_partkey, p.p_mfgr, '
+    's.s_address, s.s_phone, s.s_comment '
+    'FROM Supplier_10 s '
+    'JOIN Partsupp_10 ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey '
+    'JOIN Part_10 p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey '
+    'JOIN Nation_10 n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+    'JOIN Region_10 r ON n.n_regionkey /*+ indexnl */ = r.r_regionkey '
+    'JOIN MinCost_10 mc ON ps.ps_partkey /*+ indexnl */ = mc.ps_partkey '
+    'AND mc.min_cost = ps.ps_supplycost '
+    'WHERE p.p_size = 15 '
+    'AND p.p_type LIKE "%BRASS" '
+    'AND r.r_name = "EUROPE" '
+    'AND s.s_acctbal > 7000 '
+    'ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, p.p_partkey;'
+)
+
+interactive_query_q2_dynamic = (
+
+    'SELECT s.s_acctbal, s.s_name, n.n_name, p.p_partkey, p.p_mfgr, '
+    's.s_address, s.s_phone, s.s_comment '
+    'FROM Supplier_10 s '
+    'JOIN Partsupp_10 ps ON s.s_suppkey /*+ indexnl */ = ps.ps_suppkey '
+    'JOIN Part_10 p ON ps.ps_partkey /*+ indexnl */ = p.p_partkey '
+    'JOIN Nation_10 n ON s.s_nationkey /*+ indexnl */ = n.n_nationkey '
+    'JOIN Region_10 r ON n.n_regionkey /*+ indexnl */ = r.r_regionkey '
+    'JOIN MinCost_10 mc ON ps.ps_partkey /*+ indexnl */ = mc.ps_partkey '
+    'AND mc.min_cost = ps.ps_supplycost '
+    'WHERE p.p_size = 15 '
+    'AND p.p_type LIKE "%BRASS" '
+    'AND r.r_name = "EUROPE" '
+    'AND s.s_acctbal > 7800 '
+    'ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, p.p_partkey;'
+)
+
+blocking_query_q2 = (
+    "SELECT s.s_acctbal, s.s_name, n.n_name, p.p_partkey, p.p_mfgr, "
+    "s.s_address, s.s_phone, s.s_comment "
+    "FROM Part_10 p "
+    "JOIN Partsupp_10 ps ON p.p_partkey = ps.ps_partkey "
+    "JOIN Supplier_10 s ON ps.ps_suppkey = s.s_suppkey "
+    "JOIN Nation_10 n ON s.s_nationkey = n.n_nationkey "
+    "JOIN Region_10 r ON n.n_regionkey = r.n_regionkey "
+    "JOIN MinCost_10 mc ON mc.ps_partkey = ps.ps_partkey "
+    "AND mc.min_cost = ps.ps_supplycost "
+    "WHERE p.p_size = 15 "
+    "AND p.p_type LIKE \"%BRASS\" "
+    "AND r.r_name = \"EUROPE\" "
+    "ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, p.p_partkey;"
+)
+
+blocking_query_q2_dynamic = (
+    "SELECT s.s_acctbal, s.s_name, n.n_name, p.p_partkey, p.p_mfgr, "
+    "s.s_address, s.s_phone, s.s_comment "
+    "FROM Part_10 p "
+    "JOIN Partsupp_10 ps ON p.p_partkey = ps.ps_partkey "
+    "JOIN Supplier_10 s ON ps.ps_suppkey = s.s_suppkey "
+    "JOIN Nation_10 n ON s.s_nationkey = n.n_nationkey "
+    "JOIN Region_10 r ON n.n_regionkey = r.n_regionkey "
+    "JOIN MinCost_10 mc ON mc.ps_partkey = ps.ps_partkey "
+    "AND mc.min_cost = ps.ps_supplycost "
+    "WHERE p.p_size = 15 "
+    "AND p.p_type LIKE \"%BRASS\" "
+    "AND r.r_name = \"EUROPE\" "
+    "ORDER BY s.s_acctbal DESC, n.n_name, s.s_name, p.p_partkey;"
+)
+
+blocking_query_q5 = (
+    'SELECT c.c_nationkey, '
+    'SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Customer_10 c, Orders_10 o, Lineitem_10 l, Supplier_10 s '
+    'WHERE c.c_custkey = o.o_custkey '
+    'AND l.l_orderkey = o.o_orderkey '
+    'AND l.l_suppkey = s.s_suppkey '
+    'AND c.c_nationkey = s.s_nationkey '
+    'AND c.c_nationkey IN (8, 9, 12, 18, 21) '
+    'AND o.o_orderdate >= "1994-01-01" '
+    'AND o.o_orderdate < "1995-01-01" '
+    'GROUP BY c.c_nationkey'
+)
+blocking_query_q5_dynamic = (
+    'SET `compiler.blocking.mode` `true`; '
+    'SELECT a.* FROM ( '
+    'SELECT c.c_nationkey, '
+    'SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Customer_10 c, Orders_10 o, Lineitem_10 l, Supplier_10 s '
+    'WHERE c.c_custkey = o.o_custkey '
+    'AND l.l_orderkey = o.o_orderkey '
+    'AND l.l_suppkey = s.s_suppkey '
+    'AND c.c_nationkey = s.s_nationkey '
+    'AND c.c_nationkey IN (8, 9, 12, 18, 21) '
+    'AND o.o_orderdate >= "1994-01-01" '
+    'AND o.o_orderdate < "1995-01-01" '
+    'GROUP BY c.c_nationkey'
+    ') a WHERE a.c_nationkey > 9;'
+)
+
+interactive_query_q5 = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT c.c_nationkey, '
+    'SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Customer_10 c '
+    'JOIN Orders_10 o ON c.c_custkey /*+ indexnl */ = o.o_custkey '
+    'JOIN Lineitem_10 l ON o.o_orderkey /*+ indexnl */ = l.l_orderkey '
+    'JOIN Supplier_10 s ON l.l_suppkey /*+ indexnl */ = s.s_suppkey '
+    'WHERE c.c_nationkey = s.s_nationkey '
+    'AND c.c_nationkey = 8 '
+    'AND o.o_orderdate >= "1994-01-01" '
+    'AND o.o_orderdate < "1995-01-01" '
+    'GROUP BY c.c_nationkey;'
+)
+interactive_query_q5_dynamic = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT c.c_nationkey, '
+    'SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Customer_10 c '
+    'JOIN Orders_10 o ON c.c_custkey /*+ indexnl */ = o.o_custkey '
+    'JOIN Lineitem_10 l ON o.o_orderkey /*+ indexnl */ = l.l_orderkey '
+    'JOIN Supplier_10 s ON l.l_suppkey /*+ indexnl */ = s.s_suppkey '
+    'WHERE c.c_nationkey = s.s_nationkey '
+    'AND c.c_nationkey = 8 '
+    'AND o.o_orderdate >= "1994-01-01" '
+    'AND o.o_orderdate < "1995-01-01" '
+    'GROUP BY c.c_nationkey;'
+)
+blocking_query_q7 = (
+    'SELECT '
+    '  s.s_nationkey AS supp_nationkey, '
+    '  c.c_nationkey AS cust_nationkey, '
+    '  substring(l.l_shipdate,0,4) AS l_year, '
+    '  SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Supplier_10 s, '
+    '     Customer_10 c, '
+    '     Orders_10 o, '
+    '     Lineitem_10 l '
+    'WHERE s.s_suppkey = l.l_suppkey '
+    '  AND o.o_orderkey = l.l_orderkey '
+    '  AND c.c_custkey = o.o_custkey '
+    '  AND ( (s.s_nationkey = 6 AND c.c_nationkey = 7) '
+    '     OR (s.s_nationkey = 7 AND c.c_nationkey = 6) ) '
+    '  AND l.l_shipdate >= "1995-01-01" '
+    '  AND l.l_shipdate <  "1997-01-01" '
+    'GROUP BY s.s_nationkey, c.c_nationkey, substring(l.l_shipdate,0,4) '
+    'ORDER BY supp_nationkey, cust_nationkey, l_year;'
+)
+interactive_query_q7 = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT '
+    '  s.s_nationkey AS supp_nationkey, '
+    '  c.c_nationkey AS cust_nationkey, '
+    '  substring(l.l_shipdate,0,4) AS l_year, '
+    '  SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Supplier_10 s '
+    'JOIN Lineitem_10 l '
+    '  ON s.s_suppkey /*+ indexnl */ = l.l_suppkey '
+    'JOIN Orders_10 o '
+    '  ON l.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'JOIN Customer_10 c '
+    '  ON o.o_custkey /*+ indexnl */ = c.c_custkey '
+    'WHERE s.s_nationkey = 6 '
+    '  AND c.c_nationkey = 7 '
+    '  AND l.l_shipdate >= "1995-01-01" '
+    '  AND l.l_shipdate < "1997-01-01" '
+    'GROUP BY s.s_nationkey, c.c_nationkey, substring(l.l_shipdate,0,4);'
+)
+interactive_query_q7_dynamic = (
+    'SET `compiler.interactive.mode` "true"; '
+    'SELECT '
+    '  s.s_nationkey AS supp_nationkey, '
+    '  c.c_nationkey AS cust_nationkey, '
+    '  substring(l.l_shipdate,0,4) AS l_year, '
+    '  SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Supplier_10 s '
+    'JOIN Lineitem_10 l '
+    '  ON s.s_suppkey /*+ indexnl */ = l.l_suppkey '
+    'JOIN Orders_10 o '
+    '  ON l.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'JOIN Customer_10 c '
+    '  ON o.o_custkey /*+ indexnl */ = c.c_custkey '
+    'WHERE s.s_nationkey = 6 '
+    '  AND c.c_nationkey = 7 '
+    '  AND l.l_shipdate >= "1995-01-01" '
+    '  AND l.l_shipdate < "1997-01-01" '
+    'GROUP BY s.s_nationkey, c.c_nationkey, substring(l.l_shipdate,0,4);'
+)
+blocking_query_q7 = (
+    'SELECT '
+    '  s.s_nationkey AS supp_nationkey, '
+    '  c.c_nationkey AS cust_nationkey, '
+    '  substring(l.l_shipdate,0,4) AS l_year, '
+    '  SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Supplier_10 s '
+    'JOIN Lineitem_10 l '
+    '  ON s.s_suppkey /*+ indexnl */ = l.l_suppkey '
+    'JOIN Orders_10 o '
+    '  ON l.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'JOIN Customer_10 c '
+    '  ON o.o_custkey /*+ indexnl */ = c.c_custkey '
+    'WHERE s.s_nationkey IN (6,7) '
+    '  AND c.c_nationkey IN (6,7) '
+    '  AND s.s_nationkey <> c.c_nationkey '
+    '  AND l.l_shipdate >= "1995-01-01" '
+    '  AND l.l_shipdate < "1997-01-01" '
+    'GROUP BY s.s_nationkey, c.c_nationkey, substring(l.l_shipdate,0,4);'
+)
+
+blocking_query_q7_dynamic = (
+    'SET `compiler.blocking.mode` `true`; '
+    'SELECT a.* FROM ('
+    'SELECT '
+    '  s.s_nationkey AS supp_nationkey, '
+    '  c.c_nationkey AS cust_nationkey, '
+    '  substring(l.l_shipdate,0,4) AS l_year, '
+    '  SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue '
+    'FROM Supplier_10 s '
+    'JOIN Lineitem_10 l '
+    '  ON s.s_suppkey /*+ indexnl */ = l.l_suppkey '
+    'JOIN Orders_10 o '
+    '  ON l.l_orderkey /*+ indexnl */ = o.o_orderkey '
+    'JOIN Customer_10 c '
+    '  ON o.o_custkey /*+ indexnl */ = c.c_custkey '
+    'WHERE s.s_nationkey IN (6,7) '
+    '  AND c.c_nationkey IN (6,7) '
+    '  AND s.s_nationkey <> c.c_nationkey '
+    '  AND l.l_shipdate >= "1995-01-01" '
+    '  AND l.l_shipdate < "1997-01-01" '
+    'GROUP BY s.s_nationkey, c.c_nationkey, substring(l.l_shipdate,0,4) '
+    ') a where a.supp_nationkey > 6;'
+)
+
+
+
 
 
 
@@ -2128,7 +2610,7 @@ if __name__ == "__main__":
     parser.add_argument("--deployment", choices=["single", "multi"], default="multi")
     parser.add_argument("--query",
       choices = [
-          "q10", "q3", "q1", "q4", "q9", "q12", "q5", "q16", "q8", "q18",
+          "q10", "q3", "q1", "q4", "q9", "q12", "q5", "q16", "q8", "q18","q11","q20","q21", "q22","q7","q2",
           "SSB_q21", "SSB_q22", "SSB_q23", "SSB_q31", "SSB_q32", "SSB_q33", "SSB_q34", "SSB_q41", "SSB_q42", "SSB_q43",
           "q1_30", "q3_30", "q4_30", "q5_30", "q8_30", "q9_30", "q10_30", "q12_30", "q16_30", "q18_30",
           "q1_1", "q3_1", "q4_1", "q8_1", "q9_1", "q10_1", "q12_1", "q16_1", "q18_1"

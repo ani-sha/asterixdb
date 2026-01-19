@@ -13,6 +13,8 @@ WORKFLOW = [
     # (query, create_stmt, drop_stmt)
     ("q3", None, None),
     ("q10", None, None),
+    ("q11", None, None),
+
 
     ("q1",
      "CREATE INDEX l_returnflag_idx ON Lineitem_{sf}(l_returnflag)",
@@ -39,14 +41,37 @@ WORKFLOW = [
     ("q16",
      "CREATE INDEX p_brand_idx ON Part_{sf}(p_brand)",
      "DROP INDEX Part_{sf}.p_brand_idx"),
+     ("q20",
+      "CREATE INDEX s_name_idx ON Supplier_{sf}(s_name);"
+       "CREATE INDEX ps_suppkey_idx ON Partsupp_{sf}(ps_suppkey)",
+      "DROP INDEX Supplier_{sf}.s_name_idx;"
+      "DROP INDEX Partsupp_{sf}.ps_suppkey_idx"),
+      ("q21",
+           "CREATE INDEX s_name_idx ON Supplier_{sf}(s_name); "
+           "CREATE INDEX l_suppkey_idx ON Lineitem_{sf}(l_suppkey)",
+           "DROP INDEX Supplier_{sf}.s_name_idx; "
+           "DROP INDEX Lineitem_{sf}.l_suppkey_idx"),
+      ("q2",
+                 "CREATE INDEX s_acctbal_idx ON Supplier_{sf}(s_acctbal); "
+                 "CREATE INDEX ps_suppkey_idx ON Partsupp_{sf}(ps_suppkey)",
+                 "DROP INDEX Supplier_{sf}.s_acctbal_idx; "
+                 "DROP INDEX Partsupp_{sf}.ps_suppkey_idx"),
+       ("q5",
+           "CREATE INDEX c_nationkey_idx ON Customer_{sf}(c_nationkey)",
+           "DROP INDEX Customer_{sf}.c_nationkey_idx"),
+       ("q7",
+                  "CREATE INDEX s_nationkey_idx ON Supplier_{sf}(s_nationkey); "
+                  "CREATE INDEX l_suppkey_idx ON Lineitem_{sf}(l_suppkey)",
+                  "DROP INDEX Supplier_{sf}.s_nationkey_idx; "
+                  "DROP INDEX Lineitem_{sf}.l_suppkey_idx"),
 ]
 
 
 def run_cmd(cmd):
-    print(f"▶ Running: {cmd}")
+    print(f"Running: {cmd}")
     result = subprocess.run(cmd, shell=True)
     if result.returncode != 0:
-        print(f"❌ Command failed: {cmd}")
+        print(f" Command failed: {cmd}")
         exit(1)
 def fsync_system():
     run_cmd("sync")
@@ -56,7 +81,7 @@ def clear_os_cache():
     Drop the Linux page cache, dentries, and inodes to force cold-cache I/O.
     Requires sudo privileges.
     """
-    print("⚙️  Dropping OS caches...")
+    print(" Dropping OS caches...")
     run_cmd("sync")  # flush dirty pages
     run_cmd("sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'")
 

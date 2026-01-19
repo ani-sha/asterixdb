@@ -1,0 +1,28 @@
+{
+  "config": {
+    "sf": 10,
+    "duration_sec": 30,
+    "num_short": 0,
+    "num_long": 1,
+    "long_mode": "hybrid"
+  },
+  "short": {
+    "count": 0,
+    "avg_ms": null,
+    "p50_ms": null,
+    "p90_ms": null,
+    "p99_ms": null,
+    "errors": 0,
+    "throughput_qps": 0.0
+  },
+  "long": {
+    "count": 2,
+    "avg_ms": 59812.0507565327,
+    "p50_ms": 59812.0507565327,
+    "p90_ms": 60033.88581359758,
+    "p99_ms": 60083.79870143719,
+    "errors": 1,
+    "throughput_qps": 0.03328318834444545
+  },
+  "total_wall_time_sec": 60.09039696864784
+}

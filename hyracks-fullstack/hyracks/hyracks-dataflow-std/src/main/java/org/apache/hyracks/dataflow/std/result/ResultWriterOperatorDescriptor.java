@@ -107,10 +107,27 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
             private IFrameWriter resultPartitionWriter;
             private boolean failed = false;
             private boolean finished;
+            private static final Path HYBRID_DIR = Paths.get("results", "HybridExecution");
+
+            private static void ensureDir(Path dir) {
+                try {
+                    Files.createDirectories(dir);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create directory: " + dir.toAbsolutePath(), e);
+                }
+            }
+
+            private static void ensureParent(Path file) {
+                Path parent = file.getParent();
+                if (parent != null) {
+                    ensureDir(parent);
+                }
+            }
 
             @Override
             public void open() throws HyracksDataException {
                 try {
+                    ensureDir(HYBRID_DIR);
                     resultPartitionWriter = resultPartitionManager.createResultPartitionWriter(ctx, rsId, metadata,
                             asyncMode, partition, nPartitions, maxReads);
                     resultPartitionWriter.open();
@@ -140,7 +157,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                             try {
 
                                 String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
-
+                                ensureParent(blockingRatePath);
                                 Files.writeString(
                                         blockingRatePath,
                                         line,
@@ -174,7 +191,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                                 try {
 
                                     String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
-
+                                    ensureParent(interactiveRatePath);
                                     Files.writeString(
                                             interactiveRatePath,
                                             line,
@@ -211,13 +228,14 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
 
                                 System.out.println("Total outputted answers: " + totalCount);
                                 try {
+                                    ensureParent(countPath);
                                     Files.writeString(countPath, Integer.toString(totalCount),
                                             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                                 try {
-
+                                    ensureParent(interactiveRatePath);
                                     String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
 
                                     Files.writeString(
@@ -234,6 +252,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                                 // Write I2B signal
 
                                 try {
+                                    ensureParent(signalOutPath);
                                     Files.write(signalOutPath, "Yes".getBytes(), StandardOpenOption.CREATE,
                                             StandardOpenOption.TRUNCATE_EXISTING);
                                 } catch (IOException e) {
@@ -296,6 +315,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
 
                     System.out.println("Total outputted answers: " + totalCount);
                     try {
+                        ensureParent(interactiveRatePath);
                         Files.writeString(countPath, Integer.toString(totalCount),
                                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                     } catch (IOException e) {
@@ -304,7 +324,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                     try {
 
 
-
+                        ensureParent(interactiveRatePath);
                         Files.writeString(
                                 interactiveRatePath,
                                 line,
@@ -316,7 +336,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                     }
                 }
                 else{
-
+                    ensureParent(blockingRatePath);
                     try {
                         Files.writeString(
                                 blockingRatePath,
@@ -349,9 +369,10 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                     }
                 }
                 if (isExecutionInteractive) {
+
                     Path signalOutPath = Paths.get("results", "HybridExecution",
                             "I2BSignal");
-
+                    ensureParent(signalOutPath);
                     try {
                         Files.write(signalOutPath, "Yes".getBytes(), StandardOpenOption.CREATE,
                                 StandardOpenOption.TRUNCATE_EXISTING);
@@ -389,7 +410,10 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
 
             private void writeToFileOverWrite(String filePath, byte[] data) {
                 try {
-                    Files.write(Paths.get(filePath), data, StandardOpenOption.CREATE,
+                    Path p = Paths.get(filePath);
+                    ensureParent(p);
+                    Files.write(p, data,
+                            StandardOpenOption.CREATE,
                             StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (IOException e) {
                     System.err.println("Failed to write to file: " + filePath);

@@ -1,0 +1,22 @@
+{
+	"requestID": "651d5768-c2f4-4239-a649-e42d53939318",
+	"signature": {
+		"*": "*"
+	},
+	"errors": [{ 
+		"code": 1,		"msg": "ASX0041: Request 651d5768-c2f4-4239-a649-e42d53939318 has been cancelled"	} 
+	],
+	"status": "fatal",
+	"metrics": {
+		"elapsedTime": "197.189751493s",
+		"executionTime": "197.166581655s",
+		"compileTime": "1.874782472s",
+		"queueWaitTime": "0ns",
+		"resultCount": 0,
+		"resultSize": 0,
+		"processedObjects": 0,
+		"bufferCacheHitRatio": "0.00%",
+		"bufferCachePageReadCount": 0,
+		"errorCount": 1
+	}
+}

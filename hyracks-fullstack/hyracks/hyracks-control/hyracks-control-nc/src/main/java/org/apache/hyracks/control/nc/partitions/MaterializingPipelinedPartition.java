@@ -233,7 +233,7 @@ public class MaterializingPipelinedPartition implements IFrameWriter, IPartition
     private void checkOrCreateFile() throws HyracksDataException {
         if (fRef == null) {
             String fileName = pid.toString().replace(":", "$") + ".waf";
-            File ramdiskDir = new File("/mnt/ramdisk");
+            File ramdiskDir = new File("/dev/shm");
 
             // Confirm ramdiskDir exists
             if (!ramdiskDir.exists() || !ramdiskDir.isDirectory()) {

@@ -21,7 +21,6 @@ package org.apache.hyracks.dataflow.std.group.sort;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,6 +43,7 @@ import org.apache.hyracks.dataflow.common.io.RunFileWriter;
 import org.apache.hyracks.dataflow.std.group.IAggregatorDescriptorFactory;
 import org.apache.hyracks.dataflow.std.group.preclustered.PreclusteredGroupWriter;
 import org.apache.hyracks.dataflow.std.sort.AbstractExternalSortRunMerger;
+import org.apache.hyracks.dataflow.std.util.SmartRabbitHybridExecutionDirResolver;
 
 /**
  * Group-by aggregation is pushed into multi-pass merge of external sort.
@@ -63,14 +63,14 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
     private final int[] mergeGroupFields;
     private final IBinaryComparator[] groupByComparators;
     private boolean isGlobalGBY;
-    private static final Path HYBRID_DIR = Paths.get("results", "HybridExecution");
+    private final Path hybridDir;
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public ExternalSortGroupByRunMerger(IHyracksTaskContext ctx, List<GeneratedRunFileReader> runs, int[] sortFields,
-            RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
-            int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
-            IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
-            boolean localStage, boolean isGlobalGBY) throws IOException {
+                                        RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
+                                        int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
+                                        IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
+                                        boolean localStage, boolean isGlobalGBY) throws IOException {
         super(ctx, runs, comparators, nmk, partialAggRecordDesc, framesLimit);
         this.inputRecordDesc = inRecordDesc;
         this.partialAggRecordDesc = partialAggRecordDesc;
@@ -80,6 +80,7 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.partialAggregatorFactory = partialAggregatorFactory;
         this.localSide = localStage;
         this.isGlobalGBY = isGlobalGBY;
+        this.hybridDir = SmartRabbitHybridExecutionDirResolver.resolve(ctx);
         maybeSendB2ISignalAndWait(isGlobalGBY);
 
 
@@ -106,10 +107,10 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
     }
 
     public ExternalSortGroupByRunMerger(IHyracksTaskContext ctx, List<GeneratedRunFileReader> runs, int[] sortFields,
-            RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
-            int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
-            IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
-            boolean localStage) throws IOException {
+                                        RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
+                                        int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
+                                        IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
+                                        boolean localStage) throws IOException {
         super(ctx, runs, comparators, nmk, partialAggRecordDesc, framesLimit);
         this.inputRecordDesc = inRecordDesc;
         this.partialAggRecordDesc = partialAggRecordDesc;
@@ -119,6 +120,7 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.partialAggregatorFactory = partialAggregatorFactory;
         this.localSide = localStage;
 
+        this.hybridDir = SmartRabbitHybridExecutionDirResolver.resolve(ctx);
         maybeSendB2ISignalAndWait(isGlobalGBY);
         //create merge sort fields
 
@@ -147,14 +149,12 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         }
     }
 
-    private static void maybeSendB2ISignalAndWait(boolean shouldSignal) throws IOException {
+    private void maybeSendB2ISignalAndWait(boolean shouldSignal) throws IOException {
         if (!shouldSignal) {
             return;
         }
 
-        Files.createDirectories(HYBRID_DIR);
-
-        final Path b2iPath = HYBRID_DIR.resolve("B2ISignal");
+        final Path b2iPath = hybridDir.resolve("B2ISignal");
         final Instant startTime = Instant.now();
 
         System.out.println("This is when a B2I Signal goes out at " + LocalDateTime.now().format(TS_FMT));
@@ -168,7 +168,7 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         final Set<Path> confirmedFiles = new HashSet<>();
 
         while (true) {
-            try (Stream<Path> files = Files.list(HYBRID_DIR)
+            try (Stream<Path> files = Files.list(hybridDir)
                     .filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
 
                 files.forEach(path -> {

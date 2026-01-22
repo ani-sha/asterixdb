@@ -49,6 +49,7 @@ import org.apache.hyracks.dataflow.common.comm.io.FrameOutputStream;
 import org.apache.hyracks.dataflow.common.comm.io.FrameTupleAccessor;
 import org.apache.hyracks.dataflow.std.base.AbstractSingleActivityOperatorDescriptor;
 import org.apache.hyracks.dataflow.std.base.AbstractUnaryInputSinkOperatorNodePushable;
+import org.apache.hyracks.dataflow.std.util.SmartRabbitHybridExecutionDirResolver;
 
 public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperatorDescriptor {
 
@@ -107,7 +108,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
             private IFrameWriter resultPartitionWriter;
             private boolean failed = false;
             private boolean finished;
-            private static final Path HYBRID_DIR = Paths.get("results", "HybridExecution");
+            private Path baseDir;
 
             private static void ensureDir(Path dir) {
                 try {
@@ -127,7 +128,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
             @Override
             public void open() throws HyracksDataException {
                 try {
-                    ensureDir(HYBRID_DIR);
+                    baseDir = SmartRabbitHybridExecutionDirResolver.resolve(ctx);
                     resultPartitionWriter = resultPartitionManager.createResultPartitionWriter(ctx, rsId, metadata,
                             asyncMode, partition, nPartitions, maxReads);
                     resultPartitionWriter.open();
@@ -135,6 +136,8 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                     resultSerializer.init();
                 } catch (HyracksException e) {
                     throw HyracksDataException.create(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -143,10 +146,8 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                 if (!finished) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                     frameTupleAccessor.reset(buffer);
-                    Path interactiveRatePath = Paths.get("results", "HybridExecution",
-                            "InteractiveAnswerRate");
-                    Path blockingRatePath = Paths.get("results", "HybridExecution",
-                            "BlockingAnswerRate");
+                    Path interactiveRatePath = baseDir.resolve("InteractiveAnswerRate");
+                    Path blockingRatePath = baseDir.resolve("BlockingAnswerRate");
 
                     for (int tIndex = 0; tIndex < frameTupleAccessor.getTupleCount(); tIndex++) {
                         if(totalCount == 0 && !isExecutionInteractive) {
@@ -214,17 +215,15 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
 //                            writeToFile(allAnswersPath.toString(),snapshot);
 
                             // Overwrite InteractiveAnswers (latest flushed)
-                            Path latestAnswersPath = Paths.get("results", "HybridExecution", "InteractiveAnswers");
+                            Path latestAnswersPath = baseDir.resolve("InteractiveAnswers");
                             writeToFileOverWrite(latestAnswersPath.toString(), snapshot);
 
                             // Check B2I signal file
-                            Path stopSignalPath = Paths.get("results", "HybridExecution", "B2ISignal");
+                            Path stopSignalPath = baseDir.resolve("B2ISignal");
                             if (shouldStopProcessing(stopSignalPath.toString())) {
-                                Path signalOutPath = Paths.get("results", "HybridExecution",
-                                        "I2BSignal");
+                                Path signalOutPath = baseDir.resolve("I2BSignal");
 
-                                Path countPath = Paths.get("results", "HybridExecution",
-                                        "InteractiveAnswerCount");
+                                Path countPath = baseDir.resolve("InteractiveAnswerCount");
 
                                 System.out.println("Total outputted answers: " + totalCount);
                                 try {
@@ -301,12 +300,9 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
             @Override
             public void close() throws HyracksDataException {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-                Path interactiveRatePath = Paths.get("results", "HybridExecution",
-                        "InteractiveAnswerRate");
-                Path blockingRatePath = Paths.get("results", "HybridExecution",
-                        "BlockingAnswerRate");
-                Path countPath = Paths.get("results", "HybridExecution",
-                        "InteractiveAnswerCount");
+                Path interactiveRatePath = baseDir.resolve("InteractiveAnswerRate");
+                Path blockingRatePath = baseDir.resolve("BlockingAnswerRate");
+                Path countPath = baseDir.resolve("InteractiveAnswerCount");
                 String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
 
                 System.out.println("Total outputted tuples:close(): "+ totalCount);
@@ -370,8 +366,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                 }
                 if (isExecutionInteractive) {
 
-                    Path signalOutPath = Paths.get("results", "HybridExecution",
-                            "I2BSignal");
+                    Path signalOutPath = baseDir.resolve("I2BSignal");
                     ensureParent(signalOutPath);
                     try {
                         Files.write(signalOutPath, "Yes".getBytes(), StandardOpenOption.CREATE,

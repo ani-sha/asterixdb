@@ -53,6 +53,7 @@ import org.apache.hyracks.api.exceptions.IWarningCollector;
 import org.apache.hyracks.data.std.api.IPointable;
 import org.apache.hyracks.data.std.primitive.VoidPointable;
 import org.apache.hyracks.dataflow.common.comm.io.ArrayTupleBuilder;
+import org.apache.hyracks.dataflow.std.util.SmartRabbitHybridExecutionDirResolver;
 
 public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntimeFactory {
 
@@ -161,7 +162,9 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                 if (isDynamicFilter) {
                     System.out.println("This is a dynamic filter evaluator");
                     System.out.println(eval);
-                    Path filePath = Paths.get("results", "HybridExecution", "InteractiveAnswers");
+                    IHyracksTaskContext taskContext = ctx.getTaskContext();
+                    Path filePath = SmartRabbitHybridExecutionDirResolver.resolve(taskContext)
+                            .resolve("InteractiveAnswers");
 
                     String maxKey = null;
                     String maxValueStr = null;

@@ -260,7 +260,6 @@
 package org.apache.asterix.optimizer.base;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.asterix.om.functions.BuiltinFunctions;
@@ -274,6 +273,7 @@ import org.apache.hyracks.algebricks.core.algebra.base.ILogicalOperator;
 import org.apache.hyracks.algebricks.core.algebra.base.IOptimizationContext;
 import org.apache.hyracks.algebricks.core.algebra.base.LogicalOperatorTag;
 import org.apache.hyracks.algebricks.core.algebra.base.LogicalVariable;
+import org.apache.hyracks.algebricks.core.algebra.base.PhysicalOperatorTag;
 import org.apache.hyracks.algebricks.core.algebra.expressions.AbstractFunctionCallExpression;
 import org.apache.hyracks.algebricks.core.algebra.expressions.VariableReferenceExpression;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractLogicalOperator;
@@ -281,11 +281,10 @@ import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractUnne
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.ExchangeOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.GroupByOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.OrderOperator;
+import org.apache.hyracks.algebricks.core.algebra.operators.logical.visitors.VariableUtilities;
 import org.apache.hyracks.algebricks.core.algebra.operators.physical.IncrementalSortPOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.physical.OneToOneExchangePOperator;
-import org.apache.hyracks.algebricks.core.algebra.base.PhysicalOperatorTag;
 import org.apache.hyracks.algebricks.core.algebra.properties.OrderColumn;
-import org.apache.hyracks.algebricks.core.algebra.operators.logical.visitors.VariableUtilities;
 import org.apache.hyracks.algebricks.core.rewriter.base.IAlgebraicRewriteRule;
 
 public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewriteRule {
@@ -336,7 +335,7 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
      * Boundary = gVar (if live) else first output var of that secondary (e.g., $$107) else first PK key.
      */
     private boolean insertBeforePkProbe(Mutable<ILogicalOperator> pkProbeRef, IOptimizationContext ctx,
-                                        LogicalVariable gVar) throws AlgebricksException {
+            LogicalVariable gVar) throws AlgebricksException {
         AbstractLogicalOperator pkProbe = (AbstractLogicalOperator) pkProbeRef.getValue();
         if (pkProbe.getOperatorTag() != LogicalOperatorTag.UNNEST_MAP || pkProbe.getInputs().isEmpty()) {
             return false;
@@ -372,8 +371,7 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
         while (curRef != null) {
             AbstractLogicalOperator cur = (AbstractLogicalOperator) curRef.getValue();
 
-            if (cur.getOperatorTag() == LogicalOperatorTag.UNNEST_MAP
-                    && cur.getPhysicalOperator() != null
+            if (cur.getOperatorTag() == LogicalOperatorTag.UNNEST_MAP && cur.getPhysicalOperator() != null
                     && cur.getPhysicalOperator().getOperatorTag() == PhysicalOperatorTag.BTREE_SEARCH) {
                 BTreeJobGenParams skParams = readParams((AbstractUnnestMapOperator) cur);
                 if (!skParams.isPrimaryIndex() && safeEq(pkParams.getDatasetName(), skParams.getDatasetName())) {
@@ -417,8 +415,7 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
             boundary.add(kVars.get(0)); // final fallback
         }
 
-        incOrder.setPhysicalOperator(
-                new IncrementalSortPOperator(orderCols.toArray(new OrderColumn[0]), boundary));
+        incOrder.setPhysicalOperator(new IncrementalSortPOperator(orderCols.toArray(new OrderColumn[0]), boundary));
         incOrder.setExecutionMode(pkProbe.getExecutionMode());
 
         // ===== Rewiring to ensure: PK <- EX(above) <- ORDER <- EX(below) <- oldChild =====
@@ -432,8 +429,8 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
         boolean reusedExAbove = false;
         if (pkInput.getOperatorTag() == LogicalOperatorTag.EXCHANGE
                 && ((AbstractLogicalOperator) pkInput).getPhysicalOperator() != null
-                && ((AbstractLogicalOperator) pkInput).getPhysicalOperator().getOperatorTag()
-                == PhysicalOperatorTag.ONE_TO_ONE_EXCHANGE) {
+                && ((AbstractLogicalOperator) pkInput).getPhysicalOperator()
+                        .getOperatorTag() == PhysicalOperatorTag.ONE_TO_ONE_EXCHANGE) {
             exAbove = (AbstractLogicalOperator) pkInput; // reuse
             reusedExAbove = true;
 
@@ -466,8 +463,8 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
         ILogicalOperator oldChild = oldChildRef.getValue();
         if (oldChild.getOperatorTag() == LogicalOperatorTag.EXCHANGE
                 && ((AbstractLogicalOperator) oldChild).getPhysicalOperator() != null
-                && ((AbstractLogicalOperator) oldChild).getPhysicalOperator().getOperatorTag()
-                == PhysicalOperatorTag.ONE_TO_ONE_EXCHANGE) {
+                && ((AbstractLogicalOperator) oldChild).getPhysicalOperator()
+                        .getOperatorTag() == PhysicalOperatorTag.ONE_TO_ONE_EXCHANGE) {
             exBelowOp = (AbstractLogicalOperator) oldChild; // reuse
             reusedExBelow = true;
         } else {
@@ -540,8 +537,7 @@ public class InsertIncrementalSortBeforePKProbeRule implements IAlgebraicRewrite
         if (tag == LogicalOperatorTag.ASSIGN || tag == LogicalOperatorTag.PROJECT || tag == LogicalOperatorTag.SELECT) {
             return true;
         }
-        return tag == LogicalOperatorTag.EXCHANGE
-                && op.getPhysicalOperator() != null
+        return tag == LogicalOperatorTag.EXCHANGE && op.getPhysicalOperator() != null
                 && op.getPhysicalOperator().getOperatorTag() == PhysicalOperatorTag.ONE_TO_ONE_EXCHANGE;
     }
 

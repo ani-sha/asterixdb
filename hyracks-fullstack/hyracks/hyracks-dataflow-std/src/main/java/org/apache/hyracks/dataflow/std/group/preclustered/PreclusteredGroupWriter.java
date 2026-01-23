@@ -20,16 +20,9 @@ package org.apache.hyracks.dataflow.std.group.preclustered;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 import org.apache.hyracks.api.comm.IFrameTupleAccessor;
 import org.apache.hyracks.api.comm.IFrameWriter;
@@ -199,39 +192,39 @@ public class PreclusteredGroupWriter implements IFrameWriter {
             } else {
                 writeOutput(prevTupleGroupFields);
             }
-//                        if(isInteractive) {
-//                            String groupHash = hashSerializedGroupKey(currTupleAccessor, currTupleIndex, groupFields);
-//                            String identity = InetAddress.getLocalHost().getHostName() + "_" + Thread.currentThread().getId();
-//
-//                            String barrierDir = ("/scratch/asterixdb/results/HybridExecution/GroupBarriers/");
-//
-//                            //String barrierFile = barrierDir + "group_" + groupCounter + ".txt";
-//                            Files.createDirectories(Paths.get(barrierDir));
-//
-//                            //String identity = InetAddress.getLocalHost().getHostName() + "_" + Thread.currentThread().getId();
-//                            String barrierFileName = "group_" + groupHash + "_" + identity + ".txt";
-//                            Path barrierFile = Paths.get(barrierDir, barrierFileName);
-//
-//                            if (!Files.exists(barrierFile)) {
-//                                Files.write(barrierFile, "".getBytes(), StandardOpenOption.CREATE);
-//                            }
-//                            if (!isGlobal) {
-//                                // Wait until 4 unique files for this group key exist
-//                                while (true) {
-//                                    try (Stream<Path> files = Files.list(Paths.get(barrierDir))) {
-//                                        long count = files
-//                                                .filter(p -> p.getFileName().toString().startsWith("group_" + groupHash + "_"))
-//                                                .count();
-//                                        if (count >= 4) break;
-//                                    }
-//                                    try {
-//                                        Thread.sleep(10);
-//                                    } catch (InterruptedException e) {
-//                                        throw new RuntimeException(e);
-//                                    }
-//                                }
-//                            }
-//                        }
+            //                        if(isInteractive) {
+            //                            String groupHash = hashSerializedGroupKey(currTupleAccessor, currTupleIndex, groupFields);
+            //                            String identity = InetAddress.getLocalHost().getHostName() + "_" + Thread.currentThread().getId();
+            //
+            //                            String barrierDir = ("/scratch/asterixdb/results/HybridExecution/GroupBarriers/");
+            //
+            //                            //String barrierFile = barrierDir + "group_" + groupCounter + ".txt";
+            //                            Files.createDirectories(Paths.get(barrierDir));
+            //
+            //                            //String identity = InetAddress.getLocalHost().getHostName() + "_" + Thread.currentThread().getId();
+            //                            String barrierFileName = "group_" + groupHash + "_" + identity + ".txt";
+            //                            Path barrierFile = Paths.get(barrierDir, barrierFileName);
+            //
+            //                            if (!Files.exists(barrierFile)) {
+            //                                Files.write(barrierFile, "".getBytes(), StandardOpenOption.CREATE);
+            //                            }
+            //                            if (!isGlobal) {
+            //                                // Wait until 4 unique files for this group key exist
+            //                                while (true) {
+            //                                    try (Stream<Path> files = Files.list(Paths.get(barrierDir))) {
+            //                                        long count = files
+            //                                                .filter(p -> p.getFileName().toString().startsWith("group_" + groupHash + "_"))
+            //                                                .count();
+            //                                        if (count >= 4) break;
+            //                                    }
+            //                                    try {
+            //                                        Thread.sleep(10);
+            //                                    } catch (InterruptedException e) {
+            //                                        throw new RuntimeException(e);
+            //                                    }
+            //                                }
+            //                            }
+            //                        }
 
             tupleBuilder.reset();
             for (int groupFieldIdx : groupFields) {

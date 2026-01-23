@@ -77,7 +77,8 @@ public class PreclusteredGroupByPOperator extends AbstractPreclusteredGroupByPOp
             if ((Boolean) op.getAnnotations().get("isRewrittenMultiGroup") == true)
                 isRewrittenMultiGroup = true;
         }
-        if (isRewrittenMultiGroup) aggregatorFactory = new NestedPlansRunningAggregatorFactory(subplans, keys, fdColumns);
+        if (isRewrittenMultiGroup)
+            aggregatorFactory = new NestedPlansRunningAggregatorFactory(subplans, keys, fdColumns);
         else if (!nestedPlans.isEmpty() && nestedPlans.get(0).getRoots().get(0).getValue()
                 .getOperatorTag() == LogicalOperatorTag.RUNNINGAGGREGATE) {
             aggregatorFactory = new NestedPlansRunningAggregatorFactory(subplans, keys, fdColumns);

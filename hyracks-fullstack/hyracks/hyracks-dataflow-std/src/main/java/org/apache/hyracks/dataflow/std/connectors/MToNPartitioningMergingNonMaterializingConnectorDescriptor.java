@@ -18,6 +18,8 @@
  */
 package org.apache.hyracks.dataflow.std.connectors;
 
+import java.util.BitSet;
+
 import org.apache.hyracks.api.comm.IFrameReader;
 import org.apache.hyracks.api.comm.IFrameWriter;
 import org.apache.hyracks.api.comm.IPartitionCollector;
@@ -32,8 +34,6 @@ import org.apache.hyracks.dataflow.std.collectors.NonDeterministicPartitionBatch
 import org.apache.hyracks.dataflow.std.collectors.PartitionCollector;
 import org.apache.hyracks.dataflow.std.collectors.SortMergeFrameReader;
 
-import java.util.BitSet;
-
 public class MToNPartitioningMergingNonMaterializingConnectorDescriptor extends AbstractMToNConnectorDescriptor {
     private static final long serialVersionUID = 1L;
 
@@ -44,14 +44,14 @@ public class MToNPartitioningMergingNonMaterializingConnectorDescriptor extends 
     private final boolean stable;
 
     public MToNPartitioningMergingNonMaterializingConnectorDescriptor(IConnectorDescriptorRegistry spec,
-                                                                      ITuplePartitionComputerFactory tpcf, int[] sortFields, IBinaryComparatorFactory[] comparatorFactories,
-                                                                      INormalizedKeyComputerFactory nkcFactory) {
+            ITuplePartitionComputerFactory tpcf, int[] sortFields, IBinaryComparatorFactory[] comparatorFactories,
+            INormalizedKeyComputerFactory nkcFactory) {
         this(spec, tpcf, sortFields, comparatorFactories, nkcFactory, false);
     }
 
     public MToNPartitioningMergingNonMaterializingConnectorDescriptor(IConnectorDescriptorRegistry spec,
-                                                                      ITuplePartitionComputerFactory tpcf, int[] sortFields, IBinaryComparatorFactory[] comparatorFactories,
-                                                                      INormalizedKeyComputerFactory nkcFactory, boolean stable) {
+            ITuplePartitionComputerFactory tpcf, int[] sortFields, IBinaryComparatorFactory[] comparatorFactories,
+            INormalizedKeyComputerFactory nkcFactory, boolean stable) {
         super(spec);
         this.tpcf = tpcf;
         this.sortFields = sortFields;
@@ -62,7 +62,7 @@ public class MToNPartitioningMergingNonMaterializingConnectorDescriptor extends 
 
     @Override
     public IFrameWriter createPartitioner(IHyracksTaskContext ctx, RecordDescriptor recordDesc,
-                                          IPartitionWriterFactory edwFactory, int index, int nProducerPartitions, int nConsumerPartitions)
+            IPartitionWriterFactory edwFactory, int index, int nProducerPartitions, int nConsumerPartitions)
             throws HyracksDataException {
         final PartitionDataWriter hashWriter =
                 new PartitionDataWriter(ctx, nConsumerPartitions, edwFactory, recordDesc, tpcf.createPartitioner(ctx));
@@ -71,7 +71,7 @@ public class MToNPartitioningMergingNonMaterializingConnectorDescriptor extends 
 
     @Override
     public IPartitionCollector createPartitionCollector(IHyracksTaskContext ctx, RecordDescriptor recordDesc, int index,
-                                                        int nProducerPartitions, int nConsumerPartitions) throws HyracksDataException {
+            int nProducerPartitions, int nConsumerPartitions) throws HyracksDataException {
         IBinaryComparator[] comparators = new IBinaryComparator[comparatorFactories.length];
         for (int i = 0; i < comparatorFactories.length; ++i) {
             comparators[i] = comparatorFactories[i].createBinaryComparator();

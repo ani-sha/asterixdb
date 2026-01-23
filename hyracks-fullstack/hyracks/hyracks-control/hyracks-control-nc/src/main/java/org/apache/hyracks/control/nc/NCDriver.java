@@ -19,9 +19,11 @@
 package org.apache.hyracks.control.nc;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.hyracks.api.application.INCApplication;
+import org.apache.hyracks.api.config.IConfigManager;
 import org.apache.hyracks.control.common.config.ConfigManager;
 import org.apache.hyracks.control.common.config.ConfigUtils;
 import org.apache.hyracks.control.common.controllers.NCConfig;
@@ -45,6 +47,7 @@ public class NCDriver {
         try {
             final String nodeId = ConfigUtils.getOptionValue(args, NCConfig.Option.NODE_ID);
             final ConfigManager configManager = new ConfigManager(args);
+            registerAsterixConfigOptions(configManager);
             INCApplication application = getApplication(args);
             application.registerConfig(configManager);
             NCConfig ncConfig = new NCConfig(nodeId, configManager);
@@ -75,5 +78,17 @@ public class NCDriver {
         String appClassName = ConfigUtils.getOptionValue(args, NCConfig.Option.APP_CLASS);
         return appClassName != null ? (INCApplication) (Class.forName(appClassName)).newInstance()
                 : BaseNCApplication.INSTANCE;
+    }
+
+    private static void registerAsterixConfigOptions(IConfigManager configManager) {
+        try {
+            Class<?> configuratorClass = Class.forName("org.apache.asterix.hyracks.bootstrap.ApplicationConfigurator");
+            Method registerMethod = configuratorClass.getMethod("registerConfigOptions", IConfigManager.class);
+            registerMethod.invoke(null, configManager);
+        } catch (ClassNotFoundException e) {
+            LOGGER.debug("Asterix ApplicationConfigurator not found; skipping Asterix config bootstrap.");
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to register Asterix config options", e);
+        }
     }
 }

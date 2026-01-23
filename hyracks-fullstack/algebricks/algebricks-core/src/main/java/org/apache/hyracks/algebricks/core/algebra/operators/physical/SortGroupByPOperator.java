@@ -240,7 +240,8 @@ public class SortGroupByPOperator extends AbstractGroupByPOperator {
         int framesLimit = localMemoryRequirements.getMemoryBudgetInFrames();
         boolean isGlobalGBY = false;
         if (op.getAnnotations().containsKey("IS_EXTERNAL_GBY")) {
-            if ((Boolean) op.getAnnotations().get("IS_EXTERNAL_GBY") == true && context.getPhysicalOptimizationConfig().getBlockingMode())
+            if ((Boolean) op.getAnnotations().get("IS_EXTERNAL_GBY") == true
+                    && context.getPhysicalOptimizationConfig().getBlockingMode())
                 isGlobalGBY = true;
         }
         //        SortGroupByOperatorDescriptor gbyOpDesc = new SortGroupByOperatorDescriptor(spec, framesLimit, keys,

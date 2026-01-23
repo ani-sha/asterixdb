@@ -76,8 +76,7 @@ public class RewriteMultiColumnGroupByRule implements IAlgebraicRewriteRule {
         List<Pair<LogicalVariable, Mutable<ILogicalExpression>>> innerGByList = new ArrayList<>();
         for (int i = 1; i < gList.size(); i++) {
             Pair<LogicalVariable, Mutable<ILogicalExpression>> p = gList.get(i);
-            innerGByList
-                    .add(new Pair<>(p.first, new MutableObject<>(p.second.getValue().cloneExpression())));
+            innerGByList.add(new Pair<>(p.first, new MutableObject<>(p.second.getValue().cloneExpression())));
         }
         gList.subList(1, gList.size()).clear();
 

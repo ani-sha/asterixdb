@@ -11,8 +11,8 @@ import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractLogi
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractUnnestMapOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.ExchangeOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.OrderOperator;
-import org.apache.hyracks.algebricks.core.algebra.operators.physical.IncrementalSortPOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.physical.AbstractStableSortPOperator;
+import org.apache.hyracks.algebricks.core.algebra.operators.physical.IncrementalSortPOperator;
 import org.apache.hyracks.algebricks.core.algebra.properties.ILocalStructuralProperty;
 import org.apache.hyracks.algebricks.core.algebra.properties.LocalOrderProperty;
 import org.apache.hyracks.algebricks.core.algebra.properties.OrderColumn;
@@ -87,8 +87,7 @@ public class ReplaceSortByWithIncrementalSortRule
         OrderColumn[] sortColumns = sortPhys.getSortColumns();
 
         // read probe keys from the BTree function arguments
-        AbstractFunctionCallExpression funcExpr =
-                (AbstractFunctionCallExpression) unnest.getExpressionRef().getValue();
+        AbstractFunctionCallExpression funcExpr = (AbstractFunctionCallExpression) unnest.getExpressionRef().getValue();
         BTreeJobGenParams params = new BTreeJobGenParams();
         params.readFromFuncArgs(funcExpr.getArguments());
         List<LogicalVariable> probeVars = params.getLowKeyVarList();
@@ -104,8 +103,7 @@ public class ReplaceSortByWithIncrementalSortRule
         }
 
         // skip if input already delivers (G,K) order
-        AbstractLogicalOperator sortInput =
-                (AbstractLogicalOperator) orderOp.getInputs().get(0).getValue();
+        AbstractLogicalOperator sortInput = (AbstractLogicalOperator) orderOp.getInputs().get(0).getValue();
         if (alreadyOrdered(sortInput, sortColumns)) {
             return false;
         }
@@ -147,4 +145,3 @@ public class ReplaceSortByWithIncrementalSortRule
         return false;
     }
 }
-

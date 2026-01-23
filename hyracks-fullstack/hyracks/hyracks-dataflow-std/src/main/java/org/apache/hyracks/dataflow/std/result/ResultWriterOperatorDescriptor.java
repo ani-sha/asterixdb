@@ -65,7 +65,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
     private int totalCount;
 
     public ResultWriterOperatorDescriptor(IOperatorDescriptorRegistry spec, ResultSetId rsId, IResultMetadata metadata,
-                                          boolean asyncMode, IResultSerializerFactory resultSerializerFactory, long maxReads) throws IOException {
+            boolean asyncMode, IResultSerializerFactory resultSerializerFactory, long maxReads) throws IOException {
         super(spec, 1, 0);
         this.rsId = rsId;
         this.metadata = metadata;
@@ -75,8 +75,8 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
     }
 
     public ResultWriterOperatorDescriptor(IOperatorDescriptorRegistry spec, ResultSetId rsId, IResultMetadata metadata,
-                                          boolean asyncMode, IResultSerializerFactory resultSerializerFactory, long maxReads,
-                                          boolean isExecutionInteractive) throws IOException {
+            boolean asyncMode, IResultSerializerFactory resultSerializerFactory, long maxReads,
+            boolean isExecutionInteractive) throws IOException {
         super(spec, 1, 0);
         this.rsId = rsId;
         this.metadata = metadata;
@@ -88,7 +88,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
 
     @Override
     public IOperatorNodePushable createPushRuntime(final IHyracksTaskContext ctx,
-                                                   IRecordDescriptorProvider recordDescProvider, final int partition, final int nPartitions)
+            IRecordDescriptorProvider recordDescProvider, final int partition, final int nPartitions)
             throws HyracksDataException {
         final IResultPartitionManager resultPartitionManager = ctx.getResultPartitionManager();
 
@@ -150,20 +150,17 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                     Path blockingRatePath = baseDir.resolve("BlockingAnswerRate");
 
                     for (int tIndex = 0; tIndex < frameTupleAccessor.getTupleCount(); tIndex++) {
-                        if(totalCount == 0 && !isExecutionInteractive) {
+                        if (totalCount == 0 && !isExecutionInteractive) {
                             System.out.println(
                                     "Tuples outputted:" + totalCount + " at: " + LocalDateTime.now().format(formatter));
 
-
                             try {
 
-                                String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
+                                String line = totalCount + "," + LocalDateTime.now().format(formatter)
+                                        + System.lineSeparator();
                                 ensureParent(blockingRatePath);
-                                Files.writeString(
-                                        blockingRatePath,
-                                        line,
-                                        StandardOpenOption.CREATE,      // create if missing
-                                        StandardOpenOption.APPEND       // append instead of truncate
+                                Files.writeString(blockingRatePath, line, StandardOpenOption.CREATE, // create if missing
+                                        StandardOpenOption.APPEND // append instead of truncate
                                 );
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
@@ -186,18 +183,16 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                         }
 
                         if (isExecutionInteractive) {
-                            if(totalCount % 1000 == 1) {
-                                System.out.println(
-                                        "Tuples outputted:" + totalCount + " at: " + LocalDateTime.now().format(formatter));
+                            if (totalCount % 1000 == 1) {
+                                System.out.println("Tuples outputted:" + totalCount + " at: "
+                                        + LocalDateTime.now().format(formatter));
                                 try {
 
-                                    String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
+                                    String line = totalCount + "," + LocalDateTime.now().format(formatter)
+                                            + System.lineSeparator();
                                     ensureParent(interactiveRatePath);
-                                    Files.writeString(
-                                            interactiveRatePath,
-                                            line,
-                                            StandardOpenOption.CREATE,      // create if missing
-                                            StandardOpenOption.APPEND       // append instead of truncate
+                                    Files.writeString(interactiveRatePath, line, StandardOpenOption.CREATE, // create if missing
+                                            StandardOpenOption.APPEND // append instead of truncate
                                     );
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
@@ -208,11 +203,9 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                             byte[] snapshot = getFrameData();
                             frameOutputStream.flush(resultPartitionWriter);
 
-
-
                             // Write to InteractiveAnswersAll (append)
-//                            Path allAnswersPath = Paths.get("results", "HybridExecution", "InteractiveAnswersAll");
-//                            writeToFile(allAnswersPath.toString(),snapshot);
+                            //                            Path allAnswersPath = Paths.get("results", "HybridExecution", "InteractiveAnswersAll");
+                            //                            writeToFile(allAnswersPath.toString(),snapshot);
 
                             // Overwrite InteractiveAnswers (latest flushed)
                             Path latestAnswersPath = baseDir.resolve("InteractiveAnswers");
@@ -235,13 +228,11 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                                 }
                                 try {
                                     ensureParent(interactiveRatePath);
-                                    String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
+                                    String line = totalCount + "," + LocalDateTime.now().format(formatter)
+                                            + System.lineSeparator();
 
-                                    Files.writeString(
-                                            interactiveRatePath,
-                                            line,
-                                            StandardOpenOption.CREATE,      // create if missing
-                                            StandardOpenOption.APPEND       // append instead of truncate
+                                    Files.writeString(interactiveRatePath, line, StandardOpenOption.CREATE, // create if missing
+                                            StandardOpenOption.APPEND // append instead of truncate
                                     );
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
@@ -263,7 +254,6 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                         }
 
                         // Attempt to append tuple, flush if needed
-
 
                         // Reset the output stream per tuple
                         frameOutputStream.reset();
@@ -305,40 +295,31 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                 Path countPath = baseDir.resolve("InteractiveAnswerCount");
                 String line = totalCount + "," + LocalDateTime.now().format(formatter) + System.lineSeparator();
 
-                System.out.println("Total outputted tuples:close(): "+ totalCount);
-                if(isExecutionInteractive) {
-
+                System.out.println("Total outputted tuples:close(): " + totalCount);
+                if (isExecutionInteractive) {
 
                     System.out.println("Total outputted answers: " + totalCount);
                     try {
                         ensureParent(interactiveRatePath);
-                        Files.writeString(countPath, Integer.toString(totalCount),
-                                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                        Files.writeString(countPath, Integer.toString(totalCount), StandardOpenOption.CREATE,
+                                StandardOpenOption.TRUNCATE_EXISTING);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     try {
 
-
                         ensureParent(interactiveRatePath);
-                        Files.writeString(
-                                interactiveRatePath,
-                                line,
-                                StandardOpenOption.CREATE,      // create if missing
-                                StandardOpenOption.APPEND       // append instead of truncate
+                        Files.writeString(interactiveRatePath, line, StandardOpenOption.CREATE, // create if missing
+                                StandardOpenOption.APPEND // append instead of truncate
                         );
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                }
-                else{
+                } else {
                     ensureParent(blockingRatePath);
                     try {
-                        Files.writeString(
-                                blockingRatePath,
-                                line,
-                                StandardOpenOption.CREATE,      // create if missing
-                                StandardOpenOption.APPEND       // append instead of truncate
+                        Files.writeString(blockingRatePath, line, StandardOpenOption.CREATE, // create if missing
+                                StandardOpenOption.APPEND // append instead of truncate
                         );
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -351,7 +332,6 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                             frameOutputStream.flush(resultPartitionWriter);
 
                         }
-
 
                     } catch (Exception e) {
                         resultPartitionWriter.fail();
@@ -407,9 +387,7 @@ public class ResultWriterOperatorDescriptor extends AbstractSingleActivityOperat
                 try {
                     Path p = Paths.get(filePath);
                     ensureParent(p);
-                    Files.write(p, data,
-                            StandardOpenOption.CREATE,
-                            StandardOpenOption.TRUNCATE_EXISTING);
+                    Files.write(p, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (IOException e) {
                     System.err.println("Failed to write to file: " + filePath);
                     e.printStackTrace();

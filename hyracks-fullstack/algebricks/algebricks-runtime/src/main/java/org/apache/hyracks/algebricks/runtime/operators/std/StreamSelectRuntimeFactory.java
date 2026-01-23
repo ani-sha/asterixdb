@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -163,8 +162,8 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                     System.out.println("This is a dynamic filter evaluator");
                     System.out.println(eval);
                     IHyracksTaskContext taskContext = ctx.getTaskContext();
-                    Path filePath = SmartRabbitHybridExecutionDirResolver.resolve(taskContext)
-                            .resolve("InteractiveAnswers");
+                    Path filePath =
+                            SmartRabbitHybridExecutionDirResolver.resolve(taskContext).resolve("InteractiveAnswers");
 
                     String maxKey = null;
                     String maxValueStr = null;
@@ -219,11 +218,11 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                         }
 
                         //if (!dynamicFilterStringList.isEmpty()) {
-//                        System.out.println("Max JSON Key: " + maxKey);
-//                        System.out.println("Max JSON Value: " + dynamicFilterString);
-//
+                        //                        System.out.println("Max JSON Key: " + maxKey);
+                        //                        System.out.println("Max JSON Value: " + dynamicFilterString);
+                        //
                         dataType = inferType(dynamicFilterString);
-//                        System.out.println(dataType);
+                        //                        System.out.println(dataType);
                         dynamicFilterByte = DynamicFilterSerializer.serialize(dynamicFilterString, dataType);
                         //                            dynamicFilterByteList.addAll(maxValueStr.getBytes(StandardCharsets.UTF_8);
                         //                            IPointable constantValue = new VoidPointable();
@@ -268,98 +267,94 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                         }
                     }
                 }
-            }
-                else {
-                    // Serialize the dynamic filter value only once
+            } else {
+                // Serialize the dynamic filter value only once
 
+                for (int t = 0; t < nTuple; t++) {
+                    tRef.reset(tAccess, t);
+                    int keyFieldIndex = 0;
 
-                    for (int t = 0; t < nTuple; t++) {
-                        tRef.reset(tAccess, t);
-                        int keyFieldIndex = 0;
+                    // Extract tagged field from tuple
+                    byte[] tupleFieldBytes = tRef.getFieldData(keyFieldIndex);
+                    int tupleFieldStart = tRef.getFieldStart(keyFieldIndex);
+                    int tupleFieldLength = tRef.getFieldLength(keyFieldIndex);
+                    //                        System.out.println("Tuple:  " + toHex(tupleFieldBytes, tupleFieldStart, tupleFieldLength));
+                    //                        System.out.println("Filter: " + toHex(dynamicFilterByte, 0, dynamicFilterByte.length));
+                    boolean passesFilter =
+                            compareBinary(tupleFieldBytes, tupleFieldStart, tupleFieldLength, dynamicFilterByte) >= 0;
+                    //                        System.out.println("Compare result: " + passesFilter);
 
-                        // Extract tagged field from tuple
-                        byte[] tupleFieldBytes = tRef.getFieldData(keyFieldIndex);
-                        int tupleFieldStart = tRef.getFieldStart(keyFieldIndex);
-                        int tupleFieldLength = tRef.getFieldLength(keyFieldIndex);
-//                        System.out.println("Tuple:  " + toHex(tupleFieldBytes, tupleFieldStart, tupleFieldLength));
-//                        System.out.println("Filter: " + toHex(dynamicFilterByte, 0, dynamicFilterByte.length));
-                        boolean passesFilter = compareBinary(tupleFieldBytes, tupleFieldStart, tupleFieldLength, dynamicFilterByte) >=0;
-//                        System.out.println("Compare result: " + passesFilter);
+                    // Compare full serialized field with the serialized filter value
 
-
-                        // Compare full serialized field with the serialized filter value
-
-
-                        if (passesFilter) {
-                            if (projectionList != null) {
-                                appendProjectionToFrame(t, projectionList);
-                            } else {
-                                appendTupleToFrame(t);
-                            }
+                    if (passesFilter) {
+                        if (projectionList != null) {
+                            appendProjectionToFrame(t, projectionList);
                         } else {
-                            if (retainMissing) {
-                                retainMissingTuple(t);
-                            }
+                            appendTupleToFrame(t);
+                        }
+                    } else {
+                        if (retainMissing) {
+                            retainMissingTuple(t);
                         }
                     }
                 }
+            }
 
+            //            } else {
 
-//            } else {
-
-//                for (int t = 0; t < nTuple; t++) {
-//                    tRef.reset(tAccess, t);
-//                    int keyFieldIndex = 0;
-//                    String extractedValue = null;
-//                    int intValue = 0;
-//                    long longValue = 0;
-//                    if (Objects.equals(dataType, "string")) {
-//                        byte[] keyData = tRef.getFieldData(keyFieldIndex);
-//                        int keyStart = tRef.getFieldStart(keyFieldIndex) + 1;
-//                        int keyLength = tRef.getFieldLength(keyFieldIndex) - 1;
-//                        extractedValue = new String(keyData, keyStart, keyLength, StandardCharsets.UTF_8);
-//                    } else if (Objects.equals(dataType, "int")) {
-//                        byte[] keyData = tRef.getFieldData(keyFieldIndex);
-//                        int keyStart = tRef.getFieldStart(keyFieldIndex) + 1; // Skip type tag
-//                        longValue = ((long) (keyData[keyStart] & 0xFF) << 56)
-//                                | ((long) (keyData[keyStart + 1] & 0xFF) << 48)
-//                                | ((long) (keyData[keyStart + 2] & 0xFF) << 40)
-//                                | ((long) (keyData[keyStart + 3] & 0xFF) << 32)
-//                                | ((long) (keyData[keyStart + 4] & 0xFF) << 24)
-//                                | ((long) (keyData[keyStart + 5] & 0xFF) << 16)
-//                                | ((long) (keyData[keyStart + 6] & 0xFF) << 8)
-//                                | ((long) (keyData[keyStart + 7] & 0xFF));
-//
-//                    }
-//                    //byte[] extractedBytes = extractedValue.getBytes(StandardCharsets.UTF_8);
-//                    //if(compareDates(extractedValue,dynamicFilterString) >= 0)
-//                    boolean passesFilter = false;
-//                    if (Objects.equals(dataType, "date")) {
-//                        passesFilter = compareDatesIn(extractedValue, dynamicFilterStringList);
-//                    } else if (Objects.equals(dataType, "int")) {
-//                        //                        passesFilter = true;
-//                        //                        for(String str : dynamicFilterStringList ) {
-//                        //                            if(Long.parseLong(str) == longValue)passesFilter = false;
-//                        //                        }
-//                        passesFilter = longValue >= Long.parseLong(dynamicFilterString.trim());
-//
-//                    }
-//
-//                    if (passesFilter) {
-//
-//                        if (projectionList != null) {
-//                            appendProjectionToFrame(t, projectionList);
-//                        } else {
-//                            appendTupleToFrame(t);
-//                        }
-//                    } else {
-//
-//                        if (retainMissing) {
-//                            retainMissingTuple(t);
-//                        }
-//                    }
-//                }
-//           }
+            //                for (int t = 0; t < nTuple; t++) {
+            //                    tRef.reset(tAccess, t);
+            //                    int keyFieldIndex = 0;
+            //                    String extractedValue = null;
+            //                    int intValue = 0;
+            //                    long longValue = 0;
+            //                    if (Objects.equals(dataType, "string")) {
+            //                        byte[] keyData = tRef.getFieldData(keyFieldIndex);
+            //                        int keyStart = tRef.getFieldStart(keyFieldIndex) + 1;
+            //                        int keyLength = tRef.getFieldLength(keyFieldIndex) - 1;
+            //                        extractedValue = new String(keyData, keyStart, keyLength, StandardCharsets.UTF_8);
+            //                    } else if (Objects.equals(dataType, "int")) {
+            //                        byte[] keyData = tRef.getFieldData(keyFieldIndex);
+            //                        int keyStart = tRef.getFieldStart(keyFieldIndex) + 1; // Skip type tag
+            //                        longValue = ((long) (keyData[keyStart] & 0xFF) << 56)
+            //                                | ((long) (keyData[keyStart + 1] & 0xFF) << 48)
+            //                                | ((long) (keyData[keyStart + 2] & 0xFF) << 40)
+            //                                | ((long) (keyData[keyStart + 3] & 0xFF) << 32)
+            //                                | ((long) (keyData[keyStart + 4] & 0xFF) << 24)
+            //                                | ((long) (keyData[keyStart + 5] & 0xFF) << 16)
+            //                                | ((long) (keyData[keyStart + 6] & 0xFF) << 8)
+            //                                | ((long) (keyData[keyStart + 7] & 0xFF));
+            //
+            //                    }
+            //                    //byte[] extractedBytes = extractedValue.getBytes(StandardCharsets.UTF_8);
+            //                    //if(compareDates(extractedValue,dynamicFilterString) >= 0)
+            //                    boolean passesFilter = false;
+            //                    if (Objects.equals(dataType, "date")) {
+            //                        passesFilter = compareDatesIn(extractedValue, dynamicFilterStringList);
+            //                    } else if (Objects.equals(dataType, "int")) {
+            //                        //                        passesFilter = true;
+            //                        //                        for(String str : dynamicFilterStringList ) {
+            //                        //                            if(Long.parseLong(str) == longValue)passesFilter = false;
+            //                        //                        }
+            //                        passesFilter = longValue >= Long.parseLong(dynamicFilterString.trim());
+            //
+            //                    }
+            //
+            //                    if (passesFilter) {
+            //
+            //                        if (projectionList != null) {
+            //                            appendProjectionToFrame(t, projectionList);
+            //                        } else {
+            //                            appendTupleToFrame(t);
+            //                        }
+            //                    } else {
+            //
+            //                        if (retainMissing) {
+            //                            retainMissingTuple(t);
+            //                        }
+            //                    }
+            //                }
+            //           }
         }
 
         @Override
@@ -468,23 +463,24 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                     Double.parseDouble(s);
                     return "double";
                 }
-            } catch (NumberFormatException ignore) { }
+            } catch (NumberFormatException ignore) {
+            }
 
             // int/bigint
             try {
                 Long.parseLong(s);
                 return "bigint";
-            } catch (NumberFormatException ignore) { }
+            } catch (NumberFormatException ignore) {
+            }
 
             // date
-//            if (isDate(s)) {
-//                return "date";
-//            }
+            //            if (isDate(s)) {
+            //                return "date";
+            //            }
 
             // fallback
             return "string";
         }
-
 
         private static boolean isDate(String value) {
             try {
@@ -504,6 +500,7 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
                 }
             }
         }
+
         private int compareBinary(byte[] fieldData, int fieldOffset, int fieldLength, byte[] constantBytes) {
             int minLength = Math.min(fieldLength, constantBytes.length);
             for (int i = 0; i < minLength; i++) {
@@ -523,7 +520,6 @@ public class StreamSelectRuntimeFactory extends AbstractOneInputOneOutputRuntime
             }
             return sb.toString();
         }
-
 
     }
 

@@ -5,8 +5,8 @@ import java.nio.charset.StandardCharsets;
 
 public class DynamicFilterSerializer {
 
-    public static final byte TAG_INT32 = 0x03;  // INTEGER ordinal
-    public static final byte TAG_INT64 = 0x04;  // BIGINT ordinal
+    public static final byte TAG_INT32 = 0x03; // INTEGER ordinal
+    public static final byte TAG_INT64 = 0x04; // BIGINT ordinal
     public static final byte TAG_STRING = 0x0D;
     public static final byte TAG_DOUBLE = 0x0C;// STRING ordinal
 
@@ -27,7 +27,7 @@ public class DynamicFilterSerializer {
 
     private static byte[] serializeDouble(double v) {
         byte[] bytes = new byte[1 + 8]; // 1 for tag, 8 for double (IEEE 754)
-        bytes[0] = TAG_DOUBLE;          // define TAG_DOUBLE alongside your other tags
+        bytes[0] = TAG_DOUBLE; // define TAG_DOUBLE alongside your other tags
         ByteBuffer.wrap(bytes, 1, 8).putDouble(v);
         return bytes;
     }
@@ -55,4 +55,3 @@ public class DynamicFilterSerializer {
         return bytes;
     }
 }
-

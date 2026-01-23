@@ -45,7 +45,7 @@ public class ApplicationConfigurator {
     private ApplicationConfigurator() {
     }
 
-    static void registerConfigOptions(IConfigManager configManager) {
+    public static void registerConfigOptions(IConfigManager configManager) {
         AsterixProperties.registerConfigOptions(configManager);
         ControllerConfig.Option.DEFAULT_DIR
                 .setDefaultValue(FileUtil.joinPath(System.getProperty(ConfigurationUtil.JAVA_IO_TMPDIR), "asterixdb"));

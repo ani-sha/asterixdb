@@ -74,8 +74,9 @@ public class HashPartitionMergeExchangePOperator extends AbstractExchangePOperat
         this.domain = domain;
         this.partitionsMap = partitionsMap;
     }
+
     public HashPartitionMergeExchangePOperator(List<OrderColumn> orderColumns, List<LogicalVariable> partitionFields,
-                                               INodeDomain domain, int[][] partitionsMap, boolean isMaterializationReqd) {
+            INodeDomain domain, int[][] partitionsMap, boolean isMaterializationReqd) {
         this.orderColumns = orderColumns;
         this.partitionFields = partitionFields;
         this.domain = domain;
@@ -92,9 +93,6 @@ public class HashPartitionMergeExchangePOperator extends AbstractExchangePOperat
         return orderColumns;
     }
 
-
-
-
     public INodeDomain getDomain() {
         return domain;
     }
@@ -102,7 +100,6 @@ public class HashPartitionMergeExchangePOperator extends AbstractExchangePOperat
     public int[][] getPartitionsMap() {
         return partitionsMap;
     }
-
 
     @Override
     public void computeDeliveredProperties(ILogicalOperator op, IOptimizationContext context) {
@@ -189,11 +186,11 @@ public class HashPartitionMergeExchangePOperator extends AbstractExchangePOperat
         }
 
         IConnectorDescriptor conn;
-        if(isMaterializationReqd){
-            conn =
-                    new MToNPartitioningMergingConnectorDescriptor(spec, tpcf, sortFields, comparatorFactories, nkcf);
-        }
-        else  conn = new MToNPartitioningMergingNonMaterializingConnectorDescriptor(spec, tpcf, sortFields, comparatorFactories, nkcf);
+        if (isMaterializationReqd) {
+            conn = new MToNPartitioningMergingConnectorDescriptor(spec, tpcf, sortFields, comparatorFactories, nkcf);
+        } else
+            conn = new MToNPartitioningMergingNonMaterializingConnectorDescriptor(spec, tpcf, sortFields,
+                    comparatorFactories, nkcf);
         return new Pair<>(conn, null);
     }
 

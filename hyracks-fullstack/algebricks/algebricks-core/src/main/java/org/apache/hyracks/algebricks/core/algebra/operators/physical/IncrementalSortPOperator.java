@@ -43,7 +43,7 @@ public class IncrementalSortPOperator extends AbstractPhysicalOperator {
 
     @Override
     public PhysicalRequirements getRequiredPropertiesForChildren(ILogicalOperator op,
-                                                                 IPhysicalPropertiesVector reqdByParent, IOptimizationContext ctx) throws AlgebricksException {
+            IPhysicalPropertiesVector reqdByParent, IOptimizationContext ctx) throws AlgebricksException {
         // the input is expected to already be ordered by the grouping key. No
         // additional requirements are enforced here and the rewrite rule is
         // responsible for ensuring the pre-condition.
@@ -69,7 +69,7 @@ public class IncrementalSortPOperator extends AbstractPhysicalOperator {
 
     @Override
     public void contributeRuntimeOperator(IHyracksJobBuilder builder, JobGenContext context, ILogicalOperator op,
-                                          IOperatorSchema opSchema, IOperatorSchema[] inputSchemas, IOperatorSchema outerPlanSchema)
+            IOperatorSchema opSchema, IOperatorSchema[] inputSchemas, IOperatorSchema outerPlanSchema)
             throws AlgebricksException {
         IOperatorDescriptorRegistry spec = builder.getJobSpec();
         RecordDescriptor recDescriptor =
@@ -106,8 +106,8 @@ public class IncrementalSortPOperator extends AbstractPhysicalOperator {
         int framesLimit = localMemoryRequirements.getMemoryBudgetInFrames();
         IBinaryComparatorFactory groupCmpFactory = groupComps.length > 0 ? groupComps[0] : null;
 
-        IncrementalSortOperatorDescriptor incrementalSort = new IncrementalSortOperatorDescriptor(spec, groupByFields[0],
-                sortFields, groupCmpFactory, sortComps, framesLimit, null, recDescriptor);
+        IncrementalSortOperatorDescriptor incrementalSort = new IncrementalSortOperatorDescriptor(spec,
+                groupByFields[0], sortFields, groupCmpFactory, sortComps, framesLimit, null, recDescriptor);
         incrementalSort.setSourceLocation(op.getSourceLocation());
         contributeOpDesc(builder, (AbstractLogicalOperator) op, incrementalSort);
         ILogicalOperator src = op.getInputs().get(0).getValue();

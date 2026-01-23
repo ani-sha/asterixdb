@@ -6,6 +6,7 @@ import org.apache.hyracks.algebricks.core.algebra.base.IOptimizationContext;
 import org.apache.hyracks.algebricks.core.algebra.base.LogicalOperatorTag;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractLogicalOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.DistributeResultOperator;
+
 // change result operator to a single partition in interactive mode
 public class SetExecutionModeForInteractiveModeRule
         implements org.apache.hyracks.algebricks.core.rewriter.base.IAlgebraicRewriteRule {

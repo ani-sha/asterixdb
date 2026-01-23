@@ -21,9 +21,11 @@ package org.apache.hyracks.control.cc;
 import static org.apache.hyracks.control.common.controllers.CCConfig.Option.APP_CLASS;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.hyracks.api.application.ICCApplication;
+import org.apache.hyracks.api.config.IConfigManager;
 import org.apache.hyracks.control.common.config.ConfigManager;
 import org.apache.hyracks.control.common.config.ConfigUtils;
 import org.apache.hyracks.control.common.controllers.CCConfig;
@@ -45,6 +47,7 @@ public class CCDriver {
     public static void main(String[] args) throws Exception {
         try {
             final ConfigManager configManager = new ConfigManager(args);
+            registerAsterixConfigOptions(configManager);
             ICCApplication application = getApplication(args);
             application.registerConfig(configManager);
             CCConfig ccConfig = new CCConfig(configManager);
@@ -75,5 +78,17 @@ public class CCDriver {
         String appClassName = ConfigUtils.getOptionValue(args, APP_CLASS);
         return appClassName != null ? (ICCApplication) (Class.forName(appClassName)).newInstance()
                 : BaseCCApplication.INSTANCE;
+    }
+
+    private static void registerAsterixConfigOptions(IConfigManager configManager) {
+        try {
+            Class<?> configuratorClass = Class.forName("org.apache.asterix.hyracks.bootstrap.ApplicationConfigurator");
+            Method registerMethod = configuratorClass.getMethod("registerConfigOptions", IConfigManager.class);
+            registerMethod.invoke(null, configManager);
+        } catch (ClassNotFoundException e) {
+            LOGGER.debug("Asterix ApplicationConfigurator not found; skipping Asterix config bootstrap.");
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to register Asterix config options", e);
+        }
     }
 }

@@ -433,7 +433,7 @@ public final class RuleCollections {
         //prepareForJobGenRewrites.add(new IntroduceEagerMergeAfterHashExchange());
         prepareForJobGenRewrites.add(new ReplaceMToNExchangeWithMToNMergeExchangeRule());
         prepareForJobGenRewrites.add(new ReplaceSortMergeExchangebyOneOneExchange());
-       // prepareForJobGenRewrites.add(new ReplaceSortByWithIncrementalSortRule());
+        // prepareForJobGenRewrites.add(new ReplaceSortByWithIncrementalSortRule());
         prepareForJobGenRewrites.add(new InsertIncrementalSortBeforePKProbeRule());
         prepareForJobGenRewrites.add(new ReplaceSortGroupBywithPreClusteredGroupByRule());
         prepareForJobGenRewrites.add(new ReplaceTopExchangeToMergeExchangeRule());

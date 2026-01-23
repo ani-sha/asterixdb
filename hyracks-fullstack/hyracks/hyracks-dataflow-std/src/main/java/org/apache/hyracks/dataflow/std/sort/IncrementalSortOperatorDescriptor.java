@@ -2,6 +2,7 @@ package org.apache.hyracks.dataflow.std.sort;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
 import org.apache.hyracks.api.comm.VSizeFrame;
 import org.apache.hyracks.api.context.IHyracksTaskContext;
 import org.apache.hyracks.api.dataflow.ActivityId;
@@ -20,11 +21,6 @@ import org.apache.hyracks.dataflow.std.base.AbstractActivityNode;
 import org.apache.hyracks.dataflow.std.base.AbstractOperatorDescriptor;
 import org.apache.hyracks.dataflow.std.base.AbstractUnaryInputUnaryOutputOperatorNodePushable;
 import org.apache.hyracks.dataflow.std.buffermanager.EnumFreeSlotPolicy;
-import org.apache.hyracks.dataflow.std.sort.AbstractSorterOperatorDescriptor;
-import org.apache.hyracks.dataflow.std.sort.ExternalSortRunGenerator;
-import org.apache.hyracks.dataflow.std.sort.ExternalSortRunMerger;
-import org.apache.hyracks.dataflow.std.sort.IRunGenerator;
-import org.apache.hyracks.dataflow.std.sort.Algorithm;
 
 /**
  * Runtime descriptor for the incremental (group-local) sorter. Tuples are assumed to arrive
@@ -44,8 +40,8 @@ public class IncrementalSortOperatorDescriptor extends AbstractOperatorDescripto
     private final RecordDescriptor inRecordDesc;
 
     public IncrementalSortOperatorDescriptor(IOperatorDescriptorRegistry spec, int groupKeyPos, int[] orderFields,
-                                             IBinaryComparatorFactory groupComparatorFactory, IBinaryComparatorFactory[] orderComparatorFactories,
-                                             int frameLimit, Integer topK, RecordDescriptor recordDescriptor) {
+            IBinaryComparatorFactory groupComparatorFactory, IBinaryComparatorFactory[] orderComparatorFactories,
+            int frameLimit, Integer topK, RecordDescriptor recordDescriptor) {
         super(spec, 1, 1);
         this.groupKeyPos = groupKeyPos;
         this.orderFields = orderFields;
@@ -74,8 +70,8 @@ public class IncrementalSortOperatorDescriptor extends AbstractOperatorDescripto
 
         @Override
         public IOperatorNodePushable createPushRuntime(IHyracksTaskContext ctx,
-                                                       org.apache.hyracks.api.dataflow.value.IRecordDescriptorProvider recordDescProvider, int partition,
-                                                       int nPartitions) throws HyracksDataException {
+                org.apache.hyracks.api.dataflow.value.IRecordDescriptorProvider recordDescProvider, int partition,
+                int nPartitions) throws HyracksDataException {
             return new IncrementalSortOperatorNodePushable(ctx, getActivityId(), partition);
         }
     }
@@ -203,8 +199,9 @@ public class IncrementalSortOperatorDescriptor extends AbstractOperatorDescripto
                 state.sorter.flush(writer);
             } else {
                 state.sorter.close();
-                ExternalSortRunMerger merger = new ExternalSortRunMerger(ctx, state.generatedRunFileReaders,
-                        orderFields, sortComparators, null, inRecordDesc, frameLimit, topK == null ? Integer.MAX_VALUE : topK);
+                ExternalSortRunMerger merger =
+                        new ExternalSortRunMerger(ctx, state.generatedRunFileReaders, orderFields, sortComparators,
+                                null, inRecordDesc, frameLimit, topK == null ? Integer.MAX_VALUE : topK);
                 merger.process(writer);
             }
 
@@ -221,7 +218,8 @@ public class IncrementalSortOperatorDescriptor extends AbstractOperatorDescripto
 
         private IRunGenerator createRunGenerator(IHyracksTaskContext ctx) throws HyracksDataException {
             return new ExternalSortRunGenerator(ctx, orderFields, null, orderComparatorFactories, inRecordDesc,
-                    Algorithm.MERGE_SORT, EnumFreeSlotPolicy.LAST_FIT, frameLimit, topK == null ? Integer.MAX_VALUE : topK);
+                    Algorithm.MERGE_SORT, EnumFreeSlotPolicy.LAST_FIT, frameLimit,
+                    topK == null ? Integer.MAX_VALUE : topK);
         }
     }
 }

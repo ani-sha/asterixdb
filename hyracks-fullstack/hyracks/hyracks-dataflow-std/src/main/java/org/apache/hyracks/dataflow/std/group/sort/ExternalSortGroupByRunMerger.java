@@ -67,10 +67,10 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public ExternalSortGroupByRunMerger(IHyracksTaskContext ctx, List<GeneratedRunFileReader> runs, int[] sortFields,
-                                        RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
-                                        int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
-                                        IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
-                                        boolean localStage, boolean isGlobalGBY) throws IOException {
+            RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
+            int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
+            IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
+            boolean localStage, boolean isGlobalGBY) throws IOException {
         super(ctx, runs, comparators, nmk, partialAggRecordDesc, framesLimit);
         this.inputRecordDesc = inRecordDesc;
         this.partialAggRecordDesc = partialAggRecordDesc;
@@ -82,8 +82,6 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.isGlobalGBY = isGlobalGBY;
         this.hybridDir = SmartRabbitHybridExecutionDirResolver.resolve(ctx);
         maybeSendB2ISignalAndWait(isGlobalGBY);
-
-
 
         //create merge sort fields
         int numSortFields = sortFields.length;
@@ -107,10 +105,10 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
     }
 
     public ExternalSortGroupByRunMerger(IHyracksTaskContext ctx, List<GeneratedRunFileReader> runs, int[] sortFields,
-                                        RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
-                                        int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
-                                        IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
-                                        boolean localStage) throws IOException {
+            RecordDescriptor inRecordDesc, RecordDescriptor partialAggRecordDesc, RecordDescriptor outRecordDesc,
+            int framesLimit, int[] groupFields, INormalizedKeyComputer nmk, IBinaryComparator[] comparators,
+            IAggregatorDescriptorFactory partialAggregatorFactory, IAggregatorDescriptorFactory aggregatorFactory,
+            boolean localStage) throws IOException {
         super(ctx, runs, comparators, nmk, partialAggRecordDesc, framesLimit);
         this.inputRecordDesc = inRecordDesc;
         this.partialAggRecordDesc = partialAggRecordDesc;
@@ -123,10 +121,6 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         this.hybridDir = SmartRabbitHybridExecutionDirResolver.resolve(ctx);
         maybeSendB2ISignalAndWait(isGlobalGBY);
         //create merge sort fields
-
-
-
-
 
         //create merge sort fields
         int numSortFields = sortFields.length;
@@ -158,8 +152,8 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         final Instant startTime = Instant.now();
 
         System.out.println("This is when a B2I Signal goes out at " + LocalDateTime.now().format(TS_FMT));
-        System.out.println("Sent signal to " + b2iPath.toAbsolutePath()
-                + " to stop interactive processing at " + LocalDateTime.now().format(TS_FMT));
+        System.out.println("Sent signal to " + b2iPath.toAbsolutePath() + " to stop interactive processing at "
+                + LocalDateTime.now().format(TS_FMT));
 
         // Match ResultWriter's check for B2ISignal: "Yes."
         Files.writeString(b2iPath, "Yes.", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -168,8 +162,8 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
         final Set<Path> confirmedFiles = new HashSet<>();
 
         while (true) {
-            try (Stream<Path> files = Files.list(hybridDir)
-                    .filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
+            try (Stream<Path> files =
+                    Files.list(hybridDir).filter(p -> p.getFileName().toString().startsWith("I2BSignal"))) {
 
                 files.forEach(path -> {
                     if (confirmedFiles.contains(path)) {
@@ -189,14 +183,13 @@ public class ExternalSortGroupByRunMerger extends AbstractExternalSortRunMerger 
             }
 
             if (confirmedFiles.size() >= requiredAcks) {
-                System.out.println("Received " + confirmedFiles.size()
-                        + " 'Yes' signal(s) from interactive plan.");
+                System.out.println("Received " + confirmedFiles.size() + " 'Yes' signal(s) from interactive plan.");
                 break;
             }
 
             if (Duration.between(startTime, Instant.now()).getSeconds() > 180) {
-                throw new IOException("Timeout: Did not receive " + requiredAcks
-                        + " 'Yes' signal(s) within 3 minutes.");
+                throw new IOException(
+                        "Timeout: Did not receive " + requiredAcks + " 'Yes' signal(s) within 3 minutes.");
             }
 
             try {

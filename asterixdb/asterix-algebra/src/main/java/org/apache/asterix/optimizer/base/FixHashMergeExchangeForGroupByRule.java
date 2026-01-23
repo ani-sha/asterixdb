@@ -11,9 +11,9 @@ import org.apache.hyracks.algebricks.core.algebra.base.LogicalVariable;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.AbstractLogicalOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.ExchangeOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.GroupByOperator;
-import org.apache.hyracks.algebricks.core.algebra.operators.physical.HashPartitionMergeExchangePOperator;
 //import org.apache.hyracks.algebricks.core.algebra.operators.physical.PartitioningProperty;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.OrderOperator.IOrder;
+import org.apache.hyracks.algebricks.core.algebra.operators.physical.HashPartitionMergeExchangePOperator;
 import org.apache.hyracks.algebricks.core.algebra.properties.OrderColumn;
 import org.apache.hyracks.algebricks.core.rewriter.base.IAlgebraicRewriteRule;
 
@@ -21,7 +21,7 @@ public class FixHashMergeExchangeForGroupByRule implements IAlgebraicRewriteRule
 
     @Override
     public boolean rewritePre(org.apache.commons.lang3.mutable.Mutable<ILogicalOperator> opRef,
-                              IOptimizationContext ctx) throws AlgebricksException {
+            IOptimizationContext ctx) throws AlgebricksException {
         AbstractLogicalOperator op = (AbstractLogicalOperator) opRef.getValue();
         if (op.getOperatorTag() != LogicalOperatorTag.GROUP) {
             return false;
@@ -47,8 +47,8 @@ public class FixHashMergeExchangeForGroupByRule implements IAlgebraicRewriteRule
 
         // Collect group-by variables
         List<LogicalVariable> gvars = gby.getGroupByVarList();
-//        gby.getGroupByVarList()
-//        gby.getGroupByVarList().forEach(p -> gvars.add(p.first));
+        //        gby.getGroupByVarList()
+        //        gby.getGroupByVarList().forEach(p -> gvars.add(p.first));
 
         // Build ascending order for all group-by vars
         List<OrderColumn> newMergeOrder = new ArrayList<>();
@@ -57,8 +57,8 @@ public class FixHashMergeExchangeForGroupByRule implements IAlgebraicRewriteRule
         }
 
         // Replace the merge keys (hash keys remain as-is)
-        exch.setPhysicalOperator(new HashPartitionMergeExchangePOperator(
-                newMergeOrder, hashMerge.getPartitionFields(), hashMerge.getDomain(), hashMerge.getPartitionsMap()));
+        exch.setPhysicalOperator(new HashPartitionMergeExchangePOperator(newMergeOrder, hashMerge.getPartitionFields(),
+                hashMerge.getDomain(), hashMerge.getPartitionsMap()));
 
         ctx.computeAndSetTypeEnvironmentForOperator(exch);
         exch.computeDeliveredPhysicalProperties(ctx);
@@ -72,7 +72,7 @@ public class FixHashMergeExchangeForGroupByRule implements IAlgebraicRewriteRule
 
     @Override
     public boolean rewritePost(org.apache.commons.lang3.mutable.Mutable<ILogicalOperator> opRef,
-                               IOptimizationContext ctx) {
+            IOptimizationContext ctx) {
         return false;
     }
 }

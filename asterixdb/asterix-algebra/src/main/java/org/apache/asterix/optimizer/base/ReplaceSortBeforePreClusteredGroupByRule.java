@@ -104,7 +104,6 @@ import org.apache.hyracks.algebricks.core.algebra.operators.logical.GroupByOpera
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.OrderOperator;
 import org.apache.hyracks.algebricks.core.algebra.operators.logical.visitors.VariableUtilities;
 import org.apache.hyracks.algebricks.core.algebra.operators.physical.IncrementalSortPOperator;
-import org.apache.hyracks.algebricks.core.algebra.base.PhysicalOperatorTag;
 import org.apache.hyracks.algebricks.core.algebra.properties.OrderColumn;
 
 public class ReplaceSortBeforePreClusteredGroupByRule
@@ -179,7 +178,7 @@ public class ReplaceSortBeforePreClusteredGroupByRule
             return modified;
         }
 
-        LogicalVariable boundary = gbyInputVars.get(0);           // first group key → boundary
+        LogicalVariable boundary = gbyInputVars.get(0); // first group key → boundary
         List<LogicalVariable> orderVars = gbyInputVars.subList(1, gbyInputVars.size()); // the rest → sort keys
 
         // Liveness guards at ORDER location
@@ -196,10 +195,8 @@ public class ReplaceSortBeforePreClusteredGroupByRule
         List<Pair<OrderOperator.IOrder, Mutable<ILogicalExpression>>> orderExprs = new ArrayList<>();
         List<OrderColumn> orderColsList = new ArrayList<>();
         for (LogicalVariable v : orderVars) {
-            orderExprs.add(new Pair<>(
-                    OrderOperator.ASC_ORDER,
-                    new MutableObject<>(new VariableReferenceExpression(v))
-            ));
+            orderExprs
+                    .add(new Pair<>(OrderOperator.ASC_ORDER, new MutableObject<>(new VariableReferenceExpression(v))));
             orderColsList.add(new OrderColumn(v, OrderOperator.IOrder.OrderKind.ASC));
         }
 

@@ -68,9 +68,8 @@ public class MaterializingPipelinedPartition implements IFrameWriter, IPartition
     private IFileHandle writeHandle;
     private final IIOManager ioManager;
 
-
     public MaterializingPipelinedPartition(IHyracksTaskContext ctx, PartitionManager manager, PartitionId pid,
-                                           TaskAttemptId taId, Executor executor) {
+            TaskAttemptId taId, Executor executor) {
         this.ctx = ctx;
         this.executor = executor;
         this.ioManager = ctx.getIoManager();
@@ -237,19 +236,21 @@ public class MaterializingPipelinedPartition implements IFrameWriter, IPartition
 
             // Confirm ramdiskDir exists
             if (!ramdiskDir.exists() || !ramdiskDir.isDirectory()) {
-                throw new HyracksDataException("RAM disk directory does not exist or is not a directory: " + ramdiskDir);
+                throw new HyracksDataException(
+                        "RAM disk directory does not exist or is not a directory: " + ramdiskDir);
             }
 
             // Create the actual file in the ramdisk
             File rawFile = new File(ramdiskDir, fileName);
             try {
                 if (!rawFile.exists() && !rawFile.createNewFile()) {
-                    throw new HyracksDataException("Failed to create materialization file: " + rawFile.getAbsolutePath());
+                    throw new HyracksDataException(
+                            "Failed to create materialization file: " + rawFile.getAbsolutePath());
                 }
 
                 // Preallocate the file to fixed capacity (in bytes)
                 raf = new RandomAccessFile(rawFile, "rw");
-                raf.setLength(capacity);  // capacity must be defined elsewhere
+                raf.setLength(capacity); // capacity must be defined elsewhere
                 writeChannel = raf.getChannel();
 
                 // Wrap the file in dummy I/O handle and FileReference
@@ -260,11 +261,10 @@ public class MaterializingPipelinedPartition implements IFrameWriter, IPartition
             }
 
             synchronized (this) {
-                notifyAll();  // Notify any thread waiting for fRef to be initialized
+                notifyAll(); // Notify any thread waiting for fRef to be initialized
             }
         }
     }
-
 
     @Override
     public synchronized void nextFrame(ByteBuffer buffer) throws HyracksDataException {

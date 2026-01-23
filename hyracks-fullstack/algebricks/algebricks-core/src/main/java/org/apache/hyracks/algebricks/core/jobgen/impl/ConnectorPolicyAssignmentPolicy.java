@@ -40,10 +40,10 @@ public class ConnectorPolicyAssignmentPolicy implements IConnectorPolicyAssignme
         } else {
             return pipeliningPolicy;
         }
-//        if ( c instanceof MToOneSequentialMergingConnectorDescriptor) {
-//            return senderSideMaterializePolicy;
-//        } else {
-//            return pipeliningPolicy;
-//        }
+        //        if ( c instanceof MToOneSequentialMergingConnectorDescriptor) {
+        //            return senderSideMaterializePolicy;
+        //        } else {
+        //            return pipeliningPolicy;
+        //        }
     }
 }

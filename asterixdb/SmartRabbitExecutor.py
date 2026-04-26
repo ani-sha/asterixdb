@@ -2372,9 +2372,6 @@ blocking_query_q18_1_dynamic = (
     ') a WHERE a.o_orderkey > 10000;'
 )
 
-
-
-
 headers = {
     "Content-Type": "application/json"
 }

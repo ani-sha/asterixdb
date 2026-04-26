@@ -162,7 +162,8 @@ public class CompilerProperties extends AbstractProperties {
                 BOOLEAN,
                 AlgebricksConfig.INTERACTIVE_MODE_DEFAULT,
                 "Enable/disable interactive mode"),
-        COMPILER_BLOCKING_MODE(BOOLEAN, AlgebricksConfig.BLOCKING_MODE_DEFAULT, "Enable/disable blocking mode");
+        COMPILER_BLOCKING_MODE(BOOLEAN, AlgebricksConfig.BLOCKING_MODE_DEFAULT, "Enable/disable blocking mode"),
+        COMPILER_PLAQUE_ENABLED(BOOLEAN, AlgebricksConfig.PLAQUE_ENABLED_DEFAULT, "Enable/disable PLAQUE mode");
 
         private final IOptionType type;
         private final Object defaultValue;
@@ -250,7 +251,10 @@ public class CompilerProperties extends AbstractProperties {
     public static final String COMPILER_ORDERFIELDS_KEY = Option.COMPILER_ORDERFIELDS.ini();
 
     public static final String COMPILER_INTERACTIVE_MODE = Option.COMPILER_INTERACTIVE_MODE.ini();
+
     public static final String COMPILER_BLOCKING_MODE = Option.COMPILER_BLOCKING_MODE.ini();
+
+    public static final String COMPLIER_PLAQUE_MODE = Option.COMPILER_PLAQUE_ENABLED.ini();
 
     public static final int COMPILER_PARALLELISM_AS_STORAGE = 0;
 

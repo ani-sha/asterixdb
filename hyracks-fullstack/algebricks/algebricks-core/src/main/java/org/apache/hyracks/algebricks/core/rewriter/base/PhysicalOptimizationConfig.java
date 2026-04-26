@@ -65,6 +65,7 @@ public class PhysicalOptimizationConfig {
     private static final String MAX_VARIABLE_OCCURRENCES_INLINING = "MAX_VARIABLE_OCCURRENCES_INLINING";
     private static final String INTERACTIVEMODE = "INTERACTIVEMODE";
     private static final String BLOCKINGMODE = "BLOCKINGMODE";
+    private static final String PLAQUEMODE = "PLAQUEMODE";
     private static final String ORDER_FIELDS = "ORDER_FIELDS";
 
     private final Properties properties = new Properties();
@@ -453,5 +454,13 @@ public class PhysicalOptimizationConfig {
 
     public void setBlockingMode(boolean blockingMode) {
         setBoolean(BLOCKINGMODE, blockingMode);
+    }
+
+    public boolean getPlaqueMode() {
+        return getBoolean(PLAQUEMODE, AlgebricksConfig.PLAQUE_ENABLED_DEFAULT);
+    }
+
+    public void setPlaqueMode(boolean plaqueMode) {
+        setBoolean(PLAQUEMODE, plaqueMode);
     }
 }

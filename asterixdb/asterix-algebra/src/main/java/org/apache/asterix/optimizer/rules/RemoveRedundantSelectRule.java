@@ -56,6 +56,9 @@ public class RemoveRedundantSelectRule implements IAlgebraicRewriteRule {
             return false;
         }
         SelectOperator select = (SelectOperator) op;
+        if (Boolean.TRUE.equals(select.getAnnotations().get("plaque-filter"))) {
+            return false;
+        }
         ILogicalExpression cond = select.getCondition().getValue();
         if (alwaysHold(cond)) {
             opRef.setValue(select.getInputs().get(0).getValue());

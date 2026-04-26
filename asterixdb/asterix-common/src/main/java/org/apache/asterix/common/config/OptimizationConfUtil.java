@@ -101,6 +101,7 @@ public class OptimizationConfUtil {
                 compilerProperties.isOrderedFields());
         boolean IsInteractiveMode =
                 (getBoolean(querySpecificConfig, CompilerProperties.COMPILER_INTERACTIVE_MODE, false));
+        boolean IsPlaqueMode = (getBoolean(querySpecificConfig, CompilerProperties.COMPLIER_PLAQUE_MODE, false));
         boolean IsBlockingMode = (getBoolean(querySpecificConfig, CompilerProperties.COMPILER_BLOCKING_MODE, false));
 
         PhysicalOptimizationConfig physOptConf = new PhysicalOptimizationConfig();
@@ -134,6 +135,7 @@ public class OptimizationConfUtil {
         physOptConf.setOrderFields(orderFields);
         physOptConf.setInteractiveMode(IsInteractiveMode);
         physOptConf.setBlockingMode(IsBlockingMode);
+        physOptConf.setPlaqueMode(IsPlaqueMode);
 
         // We should have already validated the parameter names at this point...
         Set<String> filteredParameterNames = new HashSet<>(parameterNames);

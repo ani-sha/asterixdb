@@ -50,4 +50,5 @@ public class AlgebricksConfig {
     public static final int MAX_VARIABLE_OCCURRENCES_INLINING_DEFAULT = 128;
     public static final boolean INTERACTIVE_MODE_DEFAULT = false;
     public static final boolean BLOCKING_MODE_DEFAULT = false;
+    public static final boolean PLAQUE_ENABLED_DEFAULT = false;
 }

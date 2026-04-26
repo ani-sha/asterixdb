@@ -96,7 +96,7 @@ public class SqlppCompilationProvider implements ILangCompilationProvider {
                 CompilerProperties.COMPILER_QUERY_PLAN_SHAPE_KEY, CompilerProperties.COMPILER_MIN_MEMORY_ALLOCATION_KEY,
                 CompilerProperties.COMPILER_COLUMN_FILTER_KEY, CompilerProperties.COMPILER_BATCH_LOOKUP_KEY,
                 CompilerProperties.COMPILER_INTERACTIVE_MODE, CompilerProperties.COMPILER_BLOCKING_MODE,
-                FunctionUtil.IMPORT_PRIVATE_FUNCTIONS,
+                CompilerProperties.COMPLIER_PLAQUE_MODE, FunctionUtil.IMPORT_PRIVATE_FUNCTIONS,
                 CompilerProperties.COMPILER_MAX_VARIABLE_OCCURRENCES_INLINING_KEY, FuzzyUtils.SIM_FUNCTION_PROP_NAME,
                 FuzzyUtils.SIM_THRESHOLD_PROP_NAME, StartFeedStatement.WAIT_FOR_COMPLETION,
                 FeedActivityDetails.FEED_POLICY_NAME, FeedActivityDetails.COLLECT_LOCATIONS,

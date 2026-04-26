@@ -48,6 +48,11 @@ public class PushSelectDownRule implements IAlgebraicRewriteRule {
             return false;
         }
 
+        SelectOperator selectOp = (SelectOperator) op;
+        if (Boolean.TRUE.equals(selectOp.getAnnotations().get("plaque-filter"))) {
+            return false;
+        }
+
         Mutable<ILogicalOperator> opRef2 = op.getInputs().get(0);
         AbstractLogicalOperator op2 = (AbstractLogicalOperator) opRef2.getValue();
 
